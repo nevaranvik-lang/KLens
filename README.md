@@ -17,6 +17,8 @@
 
 ## About KVision
 
+This is a simplified fork of [Arkanista/KVision](https://github.com/Arkanista/KVision), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
+
 **KVision** is a high-performance VMS (Video Management System) class desktop application designed for simultaneous viewing of live video feeds (RTSP/ONVIF) and deep integration with Hikvision NVR/DVR video recorders (both Live view and synchronized Playback archives).
 
 It is designed for Linux users who need a robust, lightweight, and smooth alternative to bloated proprietary software.

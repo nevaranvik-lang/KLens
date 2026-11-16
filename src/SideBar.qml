@@ -74,65 +74,6 @@ FocusScope {
     property var nvrIndices: []
     property var nvrPresetIndices: []
 
-    property bool hasNewVersion: false
-    property string newVersionString: ""
-
-    function parseVersion(vStr) {
-        var clean = vStr.replace(/^v/, "");
-        var match = clean.match(/^(\d+(?:\.\d+)*)(?:-(\d+))?/);
-        if (!match) {
-            return { base: [0], rel: 0 };
-        }
-        var baseParts = match[1].split(".").map(Number);
-        var rel = match[2] ? Number(match[2]) : 0;
-        return { base: baseParts, rel: rel };
-    }
-
-    function compareVersions(v1, v2) {
-        var parsed1 = parseVersion(v1);
-        var parsed2 = parseVersion(v2);
-        var len = Math.max(parsed1.base.length, parsed2.base.length);
-        for (var i = 0; i < len; ++i) {
-            var p1 = parsed1.base[i] || 0;
-            var p2 = parsed2.base[i] || 0;
-            if (p1 !== p2) {
-                return p1 - p2;
-            }
-        }
-        return parsed1.rel - parsed2.rel;
-    }
-
-    function checkForUpdates() {
-        if (Context.mockNewVersion) {
-            hasNewVersion = true;
-            newVersionString = "v9.9.9 (MOCK)";
-            return;
-        }
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "https://api.github.com/repos/Arkanista/KVision/releases/latest", true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        var latestVersion = response.tag_name;
-                        var currentVersion = Qt.application.version;
-                        
-                        if (compareVersions(latestVersion, currentVersion) > 0) {
-                            hasNewVersion = true;
-                            newVersionString = latestVersion;
-                        } else {
-                            hasNewVersion = false;
-                        }
-                    } catch (e) {
-                        console.error("Failed to parse update check response:", e);
-                    }
-                }
-            }
-        }
-        xhr.send();
-    }
-
     function updateIndices() {
         var regs = [];
         var nvrs = [];
@@ -158,7 +99,6 @@ FocusScope {
         layoutsCollectionModel.changed.connect(updateIndices);
         updateIndices();
         resetPathChangesCheckbox();
-        checkForUpdates();
     }
 
     property var changelogData: [
@@ -715,24 +655,6 @@ FocusScope {
                         Layout.fillWidth: true
                     }
 
-                    Text {
-                        text: qsTr("LNG_00318")
-                        color: "#8898a6"
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.fillWidth: true
-                    }
-
-                    Text {
-                        text: qsTr("LNG_00317")
-                        color: "#ff7a00"
-                        font {
-                            pixelSize: 10
-                            bold: true
-                        }
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.fillWidth: true
-                    }
                 }
 
                 Rectangle {
@@ -1176,86 +1098,9 @@ FocusScope {
                     Layout.fillHeight: true
                 }
 
-                MouseArea {
-                    id: updateArea
-                    Layout.fillWidth: true
-                    implicitHeight: updateLayout.implicitHeight
-                    visible: rootSideBar.hasNewVersion
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    onClicked: {
-                        Qt.openUrlExternally("https://github.com/Arkanista/KVision/releases/latest")
-                    }
-
-                    ColumnLayout {
-                        id: updateLayout
-                        anchors.fill: parent
-                        spacing: 6
-                        Layout.alignment: Qt.AlignHCenter
-
-                        Item {
-                            implicitWidth: 80
-                            implicitHeight: 80
-                            Layout.alignment: Qt.AlignHCenter
-
-                            // Glow Ring
-                            Rectangle {
-                                id: glowRing
-                                anchors.centerIn: parent
-                                width: 32
-                                height: 32
-                                radius: 16
-                                color: "transparent"
-                                border.color: "#2ecc71"
-                                border.width: 2.0
-
-                                NumberAnimation on scale {
-                                    from: 1.0
-                                    to: 2.2
-                                    duration: 1600
-                                    loops: Animation.Infinite
-                                    easing.type: Easing.OutQuad
-                                }
-                                OpacityAnimator on opacity {
-                                    from: 0.8
-                                    to: 0.0
-                                    duration: 1600
-                                    loops: Animation.Infinite
-                                    easing.type: Easing.OutQuad
-                                }
-                            }
-
-                            // Core
-                            Rectangle {
-                                id: pulsingDot
-                                anchors.centerIn: parent
-                                width: 32
-                                height: 32
-                                radius: 16
-                                color: "#2ecc71" // Green
-
-                                SequentialAnimation on opacity {
-                                    loops: Animation.Infinite
-                                    PropertyAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutQuad }
-                                    PropertyAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: qsTr("LNG_00309").arg(rootSideBar.newVersionString)
-                            color: updateArea.containsMouse ? "#55efc4" : "#2ecc71"
-                            font.pixelSize: 11
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            Layout.fillWidth: true
-                        }
-                    }
-                }
-
                 // Footer version link
                 Text {
-                    text: "<a href=\"https://github.com/arkanista/kvision\" style=\"color: #8898a6; text-decoration: none;\">GitHub Project</a>"
+                    text: "<a href=\"https://github.com/nevaranvik-lang/KVision\" style=\"color: #8898a6; text-decoration: none;\">GitHub Project</a>"
                     font.pixelSize: 11
                     textFormat: Text.RichText
                     horizontalAlignment: Text.AlignHCenter

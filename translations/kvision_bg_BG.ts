@@ -3890,14 +3890,6 @@
             <translation>Версия %1</translation>
         </message>
         <message>
-            <source>LNG_00318</source>
-            <translation>Оригинален автор: Евгений С. Максимов</translation>
-        </message>
-        <message>
-            <source>LNG_00317</source>
-            <translation>Модификация: arkanista (с помощта на AI)</translation>
-        </message>
-        <message>
             <source>LNG_00316</source>
             <translation>Viewport%1</translation>
         </message>
@@ -3924,10 +3916,6 @@
         <message>
             <source>LNG_00310</source>
             <translation>Дневник на промените</translation>
-        </message>
-        <message>
-            <source>LNG_00309</source>
-            <translation>Налична версия: %1</translation>
         </message>
         <message>
             <source>LNG_00308</source>

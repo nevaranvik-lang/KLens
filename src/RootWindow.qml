@@ -18,10 +18,10 @@ ApplicationWindow {
     title: (Context.isAuxiliary ? qsTr("LNG_00018") : qsTr("LNG_00003")) + " " + Qt.application.version
 
     visible: true
-    visibility: Context.config.fullScreen ? Window.FullScreen : Window.Windowed
+    visibility: Context.config.fullScreen ? Window.FullScreen : (rootWindowSettings.maximized ? Window.Maximized : Window.Windowed)
 
     property bool isWindowMinimized: rootWindow.visibility === Window.Minimized
-    property int lastNonMinimizedVisibility: Window.Windowed
+    property int lastNonMinimizedVisibility: rootWindowSettings.maximized ? Window.Maximized : Window.Windowed
     property bool closeAccepted: false
     property string lastLoadedModelsJson: ""
     property string lastSavedModelsJson: ""
@@ -89,6 +89,11 @@ ApplicationWindow {
             Context.config.fullScreen = true;
         } else if (visibility === Window.Windowed || visibility === Window.Maximized) {
             lastNonMinimizedVisibility = visibility;
+            var isMaximized = visibility === Window.Maximized;
+            if (rootWindowSettings.maximized !== isMaximized) {
+                rootWindowSettings.maximized = isMaximized;
+                Context.writeSetting(rootWindowSettings.category, "maximized", isMaximized);
+            }
             if (active) {
                 Context.config.fullScreen = false;
             }
@@ -117,14 +122,14 @@ ApplicationWindow {
         target: rootWindowSettings
         property: "width"
         value: rootWindow.width
-        when: !Context.config.fullScreen
+        when: !Context.config.fullScreen && rootWindow.visibility === Window.Windowed
     }
 
     Binding {
         target: rootWindowSettings
         property: "height"
         value: rootWindow.height
-        when: !Context.config.fullScreen
+        when: !Context.config.fullScreen && rootWindow.visibility === Window.Windowed
     }
 
     property alias hikvisionRecordersJson: hikvisionSettings.recordersJson
@@ -251,6 +256,7 @@ ApplicationWindow {
         property int width: 1280 + 48 // SideBar compact width
         property int height: 720
         property bool fullScreen
+        property bool maximized: false
 
         Component.onCompleted: {
             // Do not initialize "fullScreen" if option "-f" is set
@@ -1793,6 +1799,7 @@ ApplicationWindow {
             Context.writeSetting("RootWindow", "width", rootWindowSettings.width);
             Context.writeSetting("RootWindow", "height", rootWindowSettings.height);
             Context.writeSetting("RootWindow", "fullScreen", Context.config.fullScreen);
+            Context.writeSetting("RootWindow", "maximized", rootWindowSettings.maximized);
         }
     }
 

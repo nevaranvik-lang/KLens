@@ -51,7 +51,6 @@ void Context::init()
     QCommandLineOption debugMemoryOption("debug-memory", "Enable object tracking in logs for memory leak debugging.");
     QCommandLineOption firstRunOption("first-run", "Force first-run assistant to launch.");
     QCommandLineOption simulateErrorOption("simulate-error", "Simulate an error for testing purposes.");
-    QCommandLineOption mockNewVersionOption("mock-new-version", "Simulate a new version for testing purposes.");
 
     parseCommandLineOptions({configOption,
                              presetOption,
@@ -63,12 +62,10 @@ void Context::init()
                              verboseOption,
                              debugMemoryOption,
                              firstRunOption,
-                             simulateErrorOption,
-                             mockNewVersionOption});
+                             simulateErrorOption});
 
     m_isAuxiliary = m_commandLineParser.isSet(auxiliaryOption);
     m_enableLogs = m_commandLineParser.isSet(verboseOption);
-    m_mockNewVersion = m_commandLineParser.isSet(mockNewVersionOption);
 
     if (m_isAuxiliary && m_commandLineParser.isSet(auxiliaryIdOption)) {
         m_auxiliaryId = m_commandLineParser.value(auxiliaryIdOption).toInt();

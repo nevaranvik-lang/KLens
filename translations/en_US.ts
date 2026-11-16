@@ -2498,16 +2498,6 @@
             <translation>Version %1</translation>
         </message>
         <message>
-            <location filename="../src/SideBar.qml" line="580" />
-            <source>LNG_00318</source>
-            <translation>Original author: Evgeny S. Maksimov</translation>
-        </message>
-        <message>
-            <location filename="../src/SideBar.qml" line="588" />
-            <source>LNG_00317</source>
-            <translation>Modification: arkanista (with AI assistance)</translation>
-        </message>
-        <message>
             <location filename="../src/SideBar.qml" line="667" />
             <source>LNG_00316</source>
             <translation>Viewport%1</translation>
@@ -2541,11 +2531,6 @@
             <location filename="../src/SideBar.qml" line="963" />
             <source>LNG_00310</source>
             <translation>Changelog</translation>
-        </message>
-        <message>
-            <location filename="../src/SideBar.qml" line="1048" />
-            <source>LNG_00309</source>
-            <translation>Available version: %1</translation>
         </message>
         <message>
             <location filename="../src/SideBar.qml" line="1095" />

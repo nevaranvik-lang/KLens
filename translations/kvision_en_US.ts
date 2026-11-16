@@ -3890,14 +3890,6 @@
             <translation>Version %1</translation>
         </message>
         <message>
-            <source>LNG_00318</source>
-            <translation>Original author: Evgeny S. Maksimov</translation>
-        </message>
-        <message>
-            <source>LNG_00317</source>
-            <translation>Modification: arkanista (with AI assistance)</translation>
-        </message>
-        <message>
             <source>LNG_00316</source>
             <translation>Viewport%1</translation>
         </message>
@@ -3924,10 +3916,6 @@
         <message>
             <source>LNG_00310</source>
             <translation>Changelog</translation>
-        </message>
-        <message>
-            <source>LNG_00309</source>
-            <translation>Available version: %1</translation>
         </message>
         <message>
             <source>LNG_00308</source>
