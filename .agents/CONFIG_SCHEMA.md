@@ -1,6 +1,6 @@
 # KLens Configuration Schema & Key Dictionary
 
-Configuration is stored in `~/.config/KVision/KVision.conf` (INI format).
+Configuration is stored in `~/.config/KLens/KLens.conf` (INI format).
 
 ---
 

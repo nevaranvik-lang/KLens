@@ -4075,7 +4075,7 @@
         </message>
         <message>
             <source>LNG_00271</source>
-            <translation>Тази опция е деактивирана, за да предотврати конфликти при запис на файл с настройки. За да го активирате (опасно и не се препоръчва!), задайте 'singleApplication=false' в конфигурационния файл kvision.conf.</translation>
+            <translation>Тази опция е деактивирана, за да предотврати конфликти при запис на файл с настройки. За да го активирате (опасно и не се препоръчва!), задайте 'singleApplication=false' в конфигурационния файл KLens.conf.</translation>
         </message>
         <message>
             <source>LNG_00270</source>

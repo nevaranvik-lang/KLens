@@ -4075,7 +4075,7 @@
         </message>
         <message>
             <source>LNG_00271</source>
-            <translation>This option is disabled to prevent settings file write conflicts. To enable it (dangerous and not recommended!), set 'singleApplication=false' in the kvision.conf configuration file.</translation>
+            <translation>This option is disabled to prevent settings file write conflicts. To enable it (dangerous and not recommended!), set 'singleApplication=false' in the KLens.conf configuration file.</translation>
         </message>
         <message>
             <source>LNG_00270</source>

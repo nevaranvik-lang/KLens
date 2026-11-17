@@ -100,7 +100,7 @@ void Context::init()
     if (m_commandLineParser.isSet(configOption)) {
         m_config = new Config(m_commandLineParser.value(configOption));
     } else {
-        // Auto-migration logic from old "CCTV Viewer" settings to "KVision" settings
+        // Auto-migration logic from old "CCTV Viewer" settings to KLens settings
         QString newConfigPath = QSettings().fileName();
         QSettings oldSettings(QStringLiteral("CCTV Viewer"), QStringLiteral("CCTV Viewer"));
         QString oldConfigPath = oldSettings.fileName();
@@ -131,12 +131,12 @@ void Context::init()
 #ifdef _WIN32
         if (!QFile::exists(newConfigPath)) {
             QFileInfo newFileInfo(newConfigPath);
-            QString siblingConf = newFileInfo.absolutePath() + QStringLiteral("/KVision.conf");
-            QString legacyWinFile = QStringLiteral("\\HKEY_CURRENT_USER\\Software\\KVision\\KVision");
+            QString siblingConf = newFileInfo.absolutePath() + QStringLiteral("/KLens.conf");
+            QString legacyWinFile = QStringLiteral("\\HKEY_CURRENT_USER\\Software\\KLens\\KLens");
             if (QFile::exists(siblingConf)) {
                 QDir().mkpath(newFileInfo.absolutePath());
                 if (QFile::copy(siblingConf, newConfigPath)) {
-                    qInfo() << "Migrated sibling KVision.conf to" << newConfigPath;
+                    qInfo() << "Migrated sibling KLens.conf to" << newConfigPath;
                     m_isFirstRun = false;
                 }
             } else if (QFile::exists(legacyWinFile)) {
@@ -515,12 +515,12 @@ QString Context::selectExportConfigFile(const QString &title, const QString &ini
 {
     QWidget *parent = QApplication::activeWindow();
     QString startDir = initialDir.isEmpty() ? QDir::homePath() : initialDir;
-    QString defaultFile = QDir(startDir).filePath(QStringLiteral("KVision.conf"));
+    QString defaultFile = QDir(startDir).filePath(QStringLiteral("KLens.conf"));
     QString selected = QFileDialog::getSaveFileName(
         parent,
         title,
         defaultFile,
-        QStringLiteral("KVision Configuration (*.conf *.ini);;All Files (*)")
+        QStringLiteral("KLens Configuration (*.conf *.ini);;All Files (*)")
     );
     if (!selected.isEmpty()) {
         QFileInfo fi(selected);
@@ -539,7 +539,7 @@ QString Context::selectImportConfigFile(const QString &title, const QString &ini
         parent,
         title,
         startDir,
-        QStringLiteral("KVision Configuration (*.conf *.ini);;All Files (*)")
+        QStringLiteral("KLens Configuration (*.conf *.ini);;All Files (*)")
     );
     return QDir::fromNativeSeparators(selected);
 }

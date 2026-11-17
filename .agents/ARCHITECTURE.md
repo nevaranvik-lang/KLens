@@ -64,7 +64,7 @@ KLens employs a multi-process architecture to support multi-monitor installation
                                          |
                                          v
                       +-------------------------------------+
-                      |    ~/.config/KVision/KVision.conf   |
+                      |      ~/.config/KLens/KLens.conf     |
                       |   (Shared INI Config with inotify)  |
                       +-------------------------------------+
                                          ^
@@ -86,7 +86,7 @@ KLens employs a multi-process architecture to support multi-monitor installation
    * Spawns independent QML engine and OpenGL context, allowing dedicated GPU scheduling across separate physical displays.
    * Monitored via `/proc` in `main.cpp::countAuxiliaryProcesses()` against `auxiliaryLimit` (max 3).
 3. **Cross-Process Hot-Reloading**:
-   * Both primary and auxiliary processes register `~/.config/KVision/KVision.conf` with [`QFileSystemWatcher`](../src/context.cpp).
+   * Both primary and auxiliary processes register `~/.config/KLens/KLens.conf` with [`QFileSystemWatcher`](../src/context.cpp).
    * File writes trigger debounced signal `Context::configFileChanged()`. All active processes reload models and camera matrices dynamically without dropped frames.
 
 ---

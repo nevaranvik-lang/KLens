@@ -165,7 +165,7 @@ This document details the step-by-step lifecycles, state machines, and sequence 
       [ QSettings::sync() ]                                         |
                 |                                                   |
                 v Flushes to disk                                   |
-    ~/.config/KVision/KVision.conf                                  |
+    ~/.config/KLens/KLens.conf                                      |
                 |                                                   |
                 +-------------------------+-------------------------+
                                           |

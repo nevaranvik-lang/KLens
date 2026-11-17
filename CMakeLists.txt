@@ -8,11 +8,11 @@ if(NOT DEFINED VER_REL)
 endif()
 # set(REL_STATUS "rc5")
 
-# Keep the QSettings identity stable so existing user configuration remains available.
-set(APP_NAME "KVision")
+# QSettings uses these names to derive the per-user settings path.
+set(APP_NAME "KLens")
 set(APP_DISPLAY_NAME "KLens")
-set(ORG_NAME "KVision")
-set(ORG_DOMAIN "kvision.org")
+set(ORG_NAME "KLens")
+set(ORG_DOMAIN "")
 
 set(VERSION "${VER_MAJ}.${VER_MIN}.${VER_PAT}")
 

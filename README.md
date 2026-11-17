@@ -92,7 +92,7 @@ It is designed for Linux users who need a robust, lightweight, and smooth altern
   * `Alt + Left` / `Alt + Right`: Switch layouts.
   * `Alt + 1` to `Alt + 9`: Instant preset switching.
 * **Language support**: Live translation switching between English and Bulgarian, with an optional system-language selection that falls back to English for other locales.
-* **Settings Import / Export**: Dedicated **Import / Export** tab for backing up and restoring configuration files (`*.conf` / `*.ini`). KLens intentionally retains its existing KVision settings location for compatibility.
+* **Settings Import / Export**: Dedicated **Import / Export** tab for backing up and restoring configuration files (`*.conf` / `*.ini`). KLens stores its active settings in `~/.config/KLens/KLens.conf`; existing KVision settings are not loaded automatically.
 
 ---
 

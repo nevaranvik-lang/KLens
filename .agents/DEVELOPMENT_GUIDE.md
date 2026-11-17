@@ -111,7 +111,7 @@ NET_DVR_WORKSTATE_V30 workState;
 ### Issue 1: "Black Screen / Loading Spinner Infinite on RTSP Stream"
 1. Verify camera URL formatting: `rtsp://[user]:[pass]@[ip]:[port]/Streaming/Channels/[ch]01` (Main) or `.../[ch]02` (Sub).
 2. Check `rtsp_transport` option in settings (Switch between `tcp` and `udp`).
-3. Launch with `./build/klens --enable-logs` and inspect `~/.config/KVision/log/klens_diagnostic.log` for FFmpeg decode errors.
+3. Launch with `./build/klens --enable-logs` and inspect `~/.config/KLens/log/klens_diagnostic.log` for FFmpeg decode errors.
 
 ### Issue 2: "Archive Playback Fails with SDK Error 23 on NVR"
 1. Logical channel `1` on NVR is physical channel `33` or `65`.
@@ -123,7 +123,7 @@ NET_DVR_WORKSTATE_V30 workState;
 2. Confirm `PACKETS_LIMIT` (64) and `VIDEO_FRAMES_LIMIT` (8) are not being bypassed in custom builds.
 
 ### Issue 4: "Auxiliary Window Won't Open"
-1. Verify `auxiliaryLimit` in `~/.config/KVision/KVision.conf` is greater than active count.
+1. Verify `auxiliaryLimit` in `~/.config/KLens/KLens.conf` is greater than active count.
 2. Check `/proc` process listing for zombie `./klens --auxiliary` processes.
 
 ---
@@ -171,5 +171,5 @@ lrelease translations/*.ts
 Before finalizing any code modification, AI agents **must** verify all of the following:
 1. **Header & Syscall Guards**: Any POSIX/Linux include (`<unistd.h>`, `<malloc.h>`, etc.) or `/proc` filesystem access must be wrapped in `#ifndef _WIN32`.
 2. **File URLs & Local Paths**: Never use `.substring(7)` on `file://` URLs or `"file://" + path` in QML/C++. Always use `QUrl::toLocalFile()` / `QUrl::fromLocalFile()` via `Context.urlToLocalFile()`, `Context.pathToUrl()`, and `Context.sanitizePlatformPath()`.
-3. **Settings Format**: Both C++ and QML (`Qt.labs.settings`) rely on `QSettings::IniFormat` (`%APPDATA%\KVision\KVision.ini` on Windows, `~/.config/KVision/KVision.conf` on Linux). Do not introduce `QSettings::NativeFormat`.
+3. **Settings Format**: Both C++ and QML (`Qt.labs.settings`) rely on `QSettings::IniFormat` (`%APPDATA%\KLens\KLens.ini` on Windows, `~/.config/KLens/KLens.conf` on Linux). Do not introduce `QSettings::NativeFormat`.
 4. **CI Workflow Integrity**: Ensure `.github/workflows/build-windows.yml`, `CMakeLists.txt`, and `src/qmlav/CMakeLists.txt` retain intact `WIN32` build targets and library linkage.
