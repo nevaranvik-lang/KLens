@@ -4,7 +4,7 @@ klens (1.0.1-1) unstable; urgency=medium
   * Moved the default settings identity to KLens.
   * Removed KVision package replacement rules so KLens can install alongside KVision.
 
- -- Tue, 17 Nov 2026 10:58:00 +0200
+ -- Nevaran <Nevaranvik@gmail.com>  Tue, 17 Nov 2026 10:58:00 +0200
 
 klens (1.0.0-1) unstable; urgency=medium
 
@@ -15,7 +15,7 @@ klens (1.0.0-1) unstable; urgency=medium
   * Made top bars auto-hide by default and persistently saved the pin setting;
     expanded the top-edge reveal area to 25 pixels.
 
- -- Tue, 17 Nov 2026 10:08:00 +0200
+ -- Nevaran <Nevaranvik@gmail.com>  Tue, 17 Nov 2026 10:08:00 +0200
 
 kvision (2.7.7-1) unstable; urgency=medium
 
