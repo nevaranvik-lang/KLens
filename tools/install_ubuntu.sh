@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# KLens - Automated Build and Installation Script for Ubuntu / Debian
+# KLens - Automated Build and Installation Script for Debian / Ubuntu
 # ==============================================================================
 set -euo pipefail
 
 echo "======================================================================"
-echo "           KLens - Installer for Ubuntu / Debian Derivatives          "
+echo "             KLens - Debian / Ubuntu Installer                        "
 echo "======================================================================"
+
+if [ ! -r /etc/os-release ]; then
+    echo "[-] Error: Cannot identify the operating system; Debian and Ubuntu are required."
+    exit 1
+fi
+# shellcheck disable=SC1091
+. /etc/os-release
+case "${ID:-}" in
+    debian|ubuntu) ;;
+    *)
+        echo "[-] Error: This installer supports Debian and Ubuntu only (detected: ${ID:-unknown})."
+        exit 1
+        ;;
+esac
 
 # Check if running in a Git repository
 if [ ! -f "CMakeLists.txt" ] || [ ! -d "src" ]; then
@@ -18,10 +32,12 @@ fi
 echo "[*] Requesting administrator (sudo) privileges..."
 sudo -v
 
-# 1. Enable universe repository (required on Ubuntu 22.04 / 24.04 for Qt5 multimedia packages)
-if command -v add-apt-repository >/dev/null 2>&1; then
+# 1. Enable Ubuntu's universe repository (required for some Qt5 packages)
+if [ "$ID" = "ubuntu" ]; then
+    sudo apt update
+    sudo apt install -y software-properties-common
     echo "[*] Enabling Ubuntu 'universe' repository..."
-    sudo add-apt-repository -y universe || true
+    sudo add-apt-repository -y universe
 fi
 
 # 2. Update package lists
@@ -34,6 +50,7 @@ sudo apt install -y \
     cmake \
     build-essential \
     git \
+    pkg-config \
     curl \
     ca-certificates \
     ffmpeg \
@@ -45,10 +62,14 @@ sudo apt install -y \
     qttools5-dev \
     libgtest-dev \
     libva-dev \
+    libgl-dev \
+    libglx-dev \
+    libx11-dev \
     libavcodec-dev \
     libavformat-dev \
     libavutil-dev \
     libswscale-dev \
+    libswresample-dev \
     libavdevice-dev \
     qml-module-qtgraphicaleffects \
     qml-module-qtquick-controls2 \

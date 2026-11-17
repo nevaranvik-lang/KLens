@@ -48,7 +48,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
          qml-module-qt-labs-settings,
          qml-module-qt-labs-folderlistmodel,
          qml-module-qtmultimedia
-Description: KLens - NVR and IP camera viewing application
- A cross-platform application for simultaneously viewing multiple IP camera
- video streams and managing Hikvision NVR/DVR live view and archive playback.
- Designed for high performance and low latency using Qt5, QML, and FFmpeg.
+Description: KLens - Debian NVR and IP camera viewing application
+ View multiple IP camera video streams and manage Hikvision NVR/DVR live view
+ and archive playback on Debian-based systems using Qt5, QML, and FFmpeg.

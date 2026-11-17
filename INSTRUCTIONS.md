@@ -89,68 +89,34 @@ This section describes the meaning of all graphical icons and buttons used in th
 
 ## 2. Installation and Launching
 
-### Installing on Arch Linux (Pacman)
-To install the program from the prepared binary package, go to the `packaging/arch/` directory and run:
+### Supported systems and installation
+
+The supported targets are Debian 12/13 and Ubuntu 22.04+ (x86_64).
+
+#### Install from a Debian package
+
+Install a downloaded or locally built `.deb` package with apt:
 ```bash
-sudo pacman -U klens-1.0.0-1-x86_64.pkg.tar.zst
+sudo apt install ./dist/klens_1.0.0-1_<distro>_amd64.deb
 ```
-The package will automatically install the program, the `.desktop` activation file, and the required Hikvision SDK libraries to the system path `/usr/lib/klens`.
 
-### Manual Compilation (from source code)
-If you want to compile the program manually (e.g., on another Linux distribution) instead of using the ready-made package:
+#### Build and install from source
 
-1. Install the required build and runtime dependencies using your package manager. For Arch Linux / CachyOS:
-   ```bash
-   sudo pacman -S base-devel cmake qt5-declarative qt5-multimedia qt5-quickcontrols qt5-quickcontrols2 qt5-svg qt5-graphicaleffects qt5-tools ffmpeg git qt5-wayland
-   ```
-2. Configure the project using CMake:
-   ```bash
-   cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-   ```
-3. Compile the code:
-   ```bash
-   cmake --build build -j$(nproc)
-   ```
-4. Install the application in the system:
-   ```bash
-   sudo cmake --install build
-   ```
-
-### Installing on Ubuntu / Debian (and derivatives)
-
-#### Option A: Quick Automated Installer (Recommended)
-You can compile and install KLens with all dependencies in a single step using the provided setup script:
 ```bash
 git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
 cd klens
 ./tools/install_ubuntu.sh
 ```
 
-#### Option B: Manual Step-by-Step Installation
-1. Enable the `universe` repository (required on Ubuntu 22.04 / 24.04 for Qt5 multimedia packages) and install dependencies:
-   ```bash
-   sudo add-apt-repository -y universe
-   sudo apt update
-   sudo apt install -y cmake build-essential git ffmpeg \
-     qtdeclarative5-dev qtmultimedia5-dev qtquickcontrols2-5-dev \
-     libqt5svg5-dev libqt5multimedia5-plugins qttools5-dev libgtest-dev libva-dev \
-     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavdevice-dev \
-     qml-module-qtgraphicaleffects qml-module-qtquick-controls2 \
-     qml-module-qtquick-layouts qml-module-qtmultimedia \
-     qml-module-qt-labs-platform qml-module-qt-labs-settings \
-     qml-module-qt-labs-folderlistmodel qml-module-qtquick-dialogs \
-     qml-module-qtquick-shapes \
-     qtwayland5
-   ```
-2. Configure and compile the project:
-   ```bash
-   cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-   cmake --build build -j$(nproc)
-   ```
-3. Install into the system:
-   ```bash
-   sudo cmake --install build
-   ```
+The script installs the dependencies, builds KLens, and installs it under `/usr`. It supports Debian and Ubuntu only.
+
+#### Build a `.deb` package
+
+```bash
+./tools/build_deb.sh
+```
+
+The generated package is written to `dist/` and can be installed with `apt install ./dist/<package>.deb`.
 
 ### Launching
 The program can be launched from the system menu or by typing in the terminal:
@@ -158,7 +124,7 @@ The program can be launched from the system menu or by typing in the terminal:
 klens
 ```
 
-### 🔧 Troubleshooting: Video Streams & Ubuntu Setup
+### 🔧 Troubleshooting: Video Streams & Debian / Ubuntu Setup
 
 #### Cameras are discovered, but Live View shows a black screen or exclamation mark
 If KLens connects to your NVR, retrieves the camera names, but the video feeds fail to play:
@@ -176,8 +142,8 @@ If KLens connects to your NVR, retrieves the camera names, but the video feeds f
    * In KLens, open **NVR Settings** (gear icon) and edit your recorder.
    * Set **RTSP Transport** to **`TCP`** (instead of Auto or UDP).
 
-3. **Ensure full installation (`sudo cmake --install build`):**
-   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/klens`), which is required for playback and archive features to locate auxiliary renderers.
+3. **Ensure full installation:**
+   Install the `.deb` package or run `./tools/install_ubuntu.sh`; both install the Hikvision SDK components under `/usr/lib/x86_64-linux-gnu/klens`, required by playback and archive features.
 
 4. **Verify RTSP stream outside KLens:**
    You can verify whether your camera's RTSP feed is reachable on your system by running:
@@ -209,12 +175,7 @@ Starting from version 2.4.4, KLens automatically detects and correctly applies f
 
 To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KLens to run natively on Wayland instead of falling back to XWayland.
 
-For Arch Linux / Manjaro / CachyOS:
-```bash
-sudo pacman -S qt5-wayland
-```
-
-For Debian / Ubuntu / Linux Mint:
+For Debian / Ubuntu:
 ```bash
 sudo apt install qtwayland5
 ```

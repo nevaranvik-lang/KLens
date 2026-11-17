@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# KLens - Automated .deb Package Builder (Debian 12/13 & Ubuntu 22.04+)
+# KLens - .deb Package Builder (Debian / Ubuntu only)
 # ==============================================================================
 set -euo pipefail
 
@@ -8,6 +8,20 @@ if [ ! -f "CMakeLists.txt" ] || [ ! -f "debian/control" ]; then
     echo "[-] Error: Run this script from the root of the KLens repository."
     exit 1
 fi
+
+if [ ! -r /etc/os-release ]; then
+    echo "[-] Error: Cannot identify the operating system; Debian and Ubuntu are required."
+    exit 1
+fi
+# shellcheck disable=SC1091
+. /etc/os-release
+case "${ID:-}" in
+    debian|ubuntu) ;;
+    *)
+        echo "[-] Error: This builder supports Debian and Ubuntu only (detected: ${ID:-unknown})."
+        exit 1
+        ;;
+esac
 
 export DEBIAN_FRONTEND=noninteractive
 export QT_QPA_PLATFORM=offscreen

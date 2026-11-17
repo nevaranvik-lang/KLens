@@ -11,7 +11,7 @@
 > * **Do Not Contact Me for Support:** Please do not contact me with support questions, bug reports, or help requests. I cannot and will not provide technical support.
 > * **NEVER Run As Root:** For security and safety reasons, **NEVER run this program as root or with administrator privileges**. 
 >
-> **Project Goal:** This project was created for the sole purpose of allowing me to completely abandon Windows on my system by replacing the essential camera viewing and playback functionality of the Hikvision iVMS-4200 software on Linux.
+> **Project Goal:** Provide reliable Hikvision camera viewing and playback on Debian-based Linux systems.
 
 ---
 
@@ -92,7 +92,7 @@ It is designed for Linux users who need a robust, lightweight, and smooth altern
   * `Alt + Left` / `Alt + Right`: Switch layouts.
   * `Alt + 1` to `Alt + 9`: Instant preset switching.
 * **Language support**: Live translation switching between English and Bulgarian, with an optional system-language selection that falls back to English for other locales.
-* **Cross-Platform Settings Import / Export**: Dedicated **Import / Export** tab in the side panel (below Settings) allowing one-click backup and migration of configuration files (`*.conf` / `*.ini`) between Linux (`~/.config/KVision/KVision.conf`) and Windows (`%APPDATA%\KVision\KVision.ini`), with automatic OS path adaptation for snapshot and video directories. KLens intentionally retains these KVision paths so existing settings remain available.
+* **Settings Import / Export**: Dedicated **Import / Export** tab for backing up and restoring configuration files (`*.conf` / `*.ini`). KLens intentionally retains its existing KVision settings location for compatibility.
 
 ---
 
@@ -118,197 +118,48 @@ It is designed for Linux users who need a robust, lightweight, and smooth altern
 
 ## System Requirements & Dependencies
 
-### Hardware Environment (Tested On)
-The application has been extensively developed and tested across multiple hardware configurations on CachyOS (Arch Linux derivative) running **KDE Plasma 6.6.5 on Wayland**:
+### Supported Debian-based platforms
 
-**Machine 1 (High-end Desktop):**
-- **Operating System:** CachyOS Linux x86_64
-- **Kernel:** Linux 7.0.11-1-cachyos
-- **Desktop Environment:** KDE Plasma 6.6.5 (KWin Wayland)
-- **CPU:** AMD Ryzen 9 5950X (16 Cores / 32 Threads)
-- **System Memory:** 64 GB RAM
-- **Graphics Card:** NVIDIA GeForce RTX 5070 Ti (16 GB VRAM)
-
-**Machine 2 (Production Environment):**
-- **Operating System:** CachyOS Linux x86_64
-- **Kernel:** Linux 7.0.11-1-cachyos
-- **Desktop Environment:** KDE Plasma 6.6.5 (KWin Wayland)
-- **CPU:** Intel Core i7-9700F (8 Cores @ 4.70 GHz)
-- **System Memory:** 16 GB RAM
-- **Graphics Card:** NVIDIA GeForce GTX 1070 Ti (8 GB VRAM)
-- **Performance Details:** Running on a 4K monitor displaying a 30-camera grid view.
-  - **CPU System Usage:** ~20%
-  - **GPU Utilization:** 25-30%
-  - **Total System RAM Usage:** ~5 GB (Application consumes ~2-2.5 GB)
-  - **VRAM Usage:** 1-2 GB
-
-**Machine 3:**
-- **Operating System:** CachyOS Linux x86_64
-- **Kernel:** Linux 7.0.11-1-cachyos
-- **Desktop Environment:** KDE Plasma 6.6.5 (KWin Wayland)
-- **CPU:** AMD Ryzen 5 5600X (6 Cores / 12 Threads @ 4.65 GHz)
-- **System Memory:** 64 GB RAM
-- **Graphics Card:** NVIDIA GeForce RTX 3060 Ti (8 GB VRAM)
+KLens is packaged and supported for Debian 12/13 and Ubuntu 22.04+ on x86_64. The repository's automated package builds target those Debian-family systems; other distribution and operating-system packages are not maintained.
 
 ### Software Dependencies
-To build and run the application, the following packages are required:
 
-* **Runtime Dependencies:**
-  - `qt5-declarative` (Qt5 QML & `QtQuick.Shapes` modules; on Debian/Ubuntu `QtQuick.Shapes` is packaged separately as `qml-module-qtquick-shapes`)
-  - `qt5-multimedia` (Qt5 Multimedia module)
-  - `qt5-quickcontrols` (Qt5 Quick Controls 1)
-  - `qt5-quickcontrols2` (Qt5 Quick Controls 2)
-  - `qt5-graphicaleffects` (Qt5 Graphical Effects)
-  - `qt5-svg` (Qt5 SVG icon rendering)
-  - `ffmpeg` (>= 5.0 recommended for advanced RTSP network timeout features)
-  - `qt5-wayland` *(optional, for native Wayland support)*
-  - *Note: Hikvision SDK shared libraries are pre-bundled under `src/hikvision_sdk/lib/` and automatically set up via the build configuration or Pacman package.*
+The Debian/Ubuntu scripts install the required dependencies. The main packages include Qt 5 QML and Multimedia development libraries, FFmpeg development libraries, the Qt translation tools, and the Hikvision SDK bundled in `src/hikvision_sdk/lib/`.
 
-* **Build Dependencies:**
-  - `cmake` (>= 3.10)
-  - `qt5-tools` (for translation compilation `lrelease`)
-  - `git`
-
----
+To install dependencies and build/install directly, use `./tools/install_ubuntu.sh`. To build a distro-specific `.deb` instead, use `./tools/build_deb.sh`.
 
 ## Getting Started
 
 To clone this repository, make sure you include the submodules:
 ```bash
-git clone --recurse-submodules https://github.com/arkanista/kvision.git klens
+git clone --recurse-submodules https://github.com/nevaranvik-lang/kvision.git klens
 ```
 
-### Existing Pre-compiled Packages (`v2.7.8` & Automated Rolling Builds)
+### Debian / Ubuntu install and package build
 
-This rebrand starts the KLens release series at **1.0.0**. The downloads below are older KVision artifacts (v2.7.8); new builds from this source are branded KLens.
+KLens supports Debian 12/13 and Ubuntu 22.04+ x86_64. Installation and packaging are provided through `tools/install_ubuntu.sh` and `tools/build_deb.sh` only.
 
-Pre-built packages for **Windows x64**, **Arch Linux / CachyOS**, **Debian / Ubuntu / Linux Mint**, and **Universal Linux (`AppImage`)** are available from the [v2.7.8 release](https://github.com/Arkanista/KVision/releases/tag/v2.7.8). The latest automated builds from `master` are also published under [`linux-latest`](https://github.com/Arkanista/KVision/releases/tag/linux-latest) and [`windows-latest`](https://github.com/Arkanista/KVision/releases/tag/windows-latest).
-
-#### 1. Universal Linux (`AppImage`)
-
-The AppImage is a single-file executable for modern distributions with **glibc 2.35 or later** (Ubuntu 22.04+, Debian 12+, Linux Mint 21+):
-
-* **[Download KVision-2.7.8-x86_64.AppImage](https://github.com/Arkanista/KVision/releases/download/v2.7.8/KVision-2.7.8-x86_64.AppImage)**
+#### Build and install KLens from source
 
 ```bash
-chmod +x KVision-2.7.8-x86_64.AppImage
-./KVision-2.7.8-x86_64.AppImage
-```
-
-> [!NOTE]
-> **AppImage runtime notes:**
-> * **Ubuntu 22.04 / 24.04+ (missing FUSE 2):** If launching the AppImage fails with a FUSE error, install FUSE 2 (`sudo apt install libfuse2` on Ubuntu 22.04 or `sudo apt install libfuse2t64` on Ubuntu 24.04+) or run it with `./KVision-2.7.8-x86_64.AppImage --appimage-extract-and-run`.
-> * **Display server:** The AppImage bundles Qt platform plugins for both **X11 / XWayland (`xcb`)** and **native Wayland (`wayland`)**.
-
-#### 2. Debian, Ubuntu & Linux Mint (`.deb`)
-
-Native `.deb` packages link dynamically against the distribution's system FFmpeg ABI. Choose the package matching your base distribution:
-
-| Package File (`v2.7.8`) | Compatible Distributions |
-| :--- | :--- |
-| [`kvision_2.7.8-1_debian12_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_debian12_amd64.deb) | **Debian 12 (`bookworm`)**, **LMDE 6 (`Faye`)** |
-| [`kvision_2.7.8-1_debian13_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_debian13_amd64.deb) | **Debian 13 (`trixie`)**, **LMDE 7 (`Gigi`)** |
-| [`kvision_2.7.8-1_ubuntu22.04_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_ubuntu22.04_amd64.deb) | **Ubuntu 22.04 LTS (`jammy`)**, **Linux Mint 21.x** (`Vanessa` / `Vera` / `Victoria` / `Virginia`) |
-| [`kvision_2.7.8-1_ubuntu24.04_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_ubuntu24.04_amd64.deb) | **Ubuntu 24.04 LTS (`noble`)**, **Linux Mint 22.x** (`Wilma` / `Xia` / `Zena`) |
-| [`kvision_2.7.8-1_ubuntu26.04_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_ubuntu26.04_amd64.deb) | **Ubuntu 26.04 LTS (`resolute`)**, **Linux Mint 23.x** |
-| [`kvision_2.7.8-1_ubuntu26.10_amd64.deb`](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision_2.7.8-1_ubuntu26.10_amd64.deb) | **Ubuntu 26.10** |
-
-Install the matching `.deb` package with `apt` so runtime dependencies are resolved automatically. On Ubuntu, make sure the `universe` repository is enabled:
-
-```bash
-sudo apt update
-sudo apt install ./kvision_2.7.8-1_<distro>_amd64.deb
-```
-
-You can also build `.deb` or `AppImage` packages locally with `./tools/build_deb.sh` and `./tools/build_appimage.sh`.
-
-#### 3. Arch Linux / CachyOS (`Pacman`)
-
-* **[Download kvision-2.7.8-1-x86_64.pkg.tar.zst](https://github.com/Arkanista/KVision/releases/download/v2.7.8/kvision-2.7.8-1-x86_64.pkg.tar.zst)**
-
-```bash
-sudo pacman -U kvision-2.7.8-1-x86_64.pkg.tar.zst
-```
-
-> [!NOTE]
-> The Arch Linux package is built and tested with modern system libraries including FFmpeg 9 (`libavutil.so.61` / `libavformat.so.63`) on Arch Linux / CachyOS.
-
-#### 4. Windows 10 / 11 (x64 Portable ZIP)
-
-* **[Download KVision-windows-x64.zip (v2.7.8)](https://github.com/Arkanista/KVision/releases/download/v2.7.8/KVision-windows-x64.zip)** (compiled with MSVC 2022, Qt 5.15.2, FFmpeg 8.1 shared, and Hikvision SDK; rolling builds are available under [`windows-latest`](https://github.com/Arkanista/KVision/releases/tag/windows-latest)).
-
-Extract the archive anywhere and run `kvision.exe`.
-
-### Building from Source (Arch Linux / CachyOS)
-
-The easiest and recommended way to build and install the application from source on Arch-based distributions is by using `makepkg`, which automatically resolves and installs all required dependencies.
-
-1. Navigate to the Arch packaging directory:
-   ```bash
-   cd klens/packaging/arch
-   ```
-2. Build the package (the `-s` flag will automatically download and install all missing dependencies via `pacman`, and `-i` will install the built package):
-   ```bash
-   makepkg -si
-   ```
-
-### Building on Ubuntu / Debian (and other derivatives)
-
-KLens is fully compatible with Ubuntu, Debian, and other derivatives. The build system dynamically configures the shared library search paths (RPATH) based on your system's library directory layout (e.g., `/usr/lib/x86_64-linux-gnu` under Ubuntu's multi-arch layout vs `/usr/lib` on Arch Linux).
-
-> [!NOTE]
-> Starting from version 2.2.7, you **do not** need to manually configure `/etc/ld.so.conf.d/` or run `ldconfig` to fix missing `libhcnetsdk.so` errors. The build system automatically sets the correct RPATH, resolving library paths seamlessly!
-
-Here is the step-by-step installation guide:
-
-#### Option A: Quick Automated Installer (Recommended)
-You can build and install KLens with all dependencies in a single step using the provided setup script:
-```bash
-git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
+git clone --recurse-submodules https://github.com/nevaranvik-lang/KVision.git klens
 cd klens
 ./tools/install_ubuntu.sh
 ```
 
-#### Option B: Manual Step-by-Step Installation
+The script installs Debian/Ubuntu dependencies, builds KLens, and installs it under `/usr`. It rejects non-Debian/Ubuntu systems.
 
-1. **Enable the Universe repository and install required dependencies:**
-   *(Note: On Ubuntu 22.04 / 24.04 LTS, Qt5 multimedia packages are hosted in the `universe` repository).*
-   ```bash
-   sudo add-apt-repository -y universe
-   sudo apt update
-   sudo apt install -y cmake build-essential git ffmpeg \
-     qtdeclarative5-dev qtmultimedia5-dev qtquickcontrols2-5-dev \
-     libqt5svg5-dev libqt5multimedia5-plugins qttools5-dev libgtest-dev libva-dev \
-     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavdevice-dev \
-     qml-module-qtgraphicaleffects qml-module-qtquick-controls2 \
-     qml-module-qtquick-layouts qml-module-qtmultimedia \
-     qml-module-qt-labs-platform qml-module-qt-labs-settings \
-     qml-module-qt-labs-folderlistmodel qml-module-qtquick-dialogs \
-     qml-module-qtquick-shapes \
-     qtwayland5 # optional for native Wayland support
-   ```
+#### Build a `.deb` package
 
-2. **Clone the repository with submodules:**
-   ```bash
-   git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
-   cd klens
-   ```
+```bash
+./tools/build_deb.sh
+```
 
-3. **Configure and build the application:**
-   ```bash
-   cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-   cmake --build build -j$(nproc)
-   ```
+The script builds a distro-specific package under `dist/`. Install it with apt:
 
-4. **Install the application:**
-   ```bash
-   sudo cmake --install build
-   ```
-
-5. **Run KLens:**
-   ```bash
-   klens
-   ```
+```bash
+sudo apt install ./dist/klens_1.0.0-1_<distro>_amd64.deb
+```
 
 ### 🌐 Remote Recorders (WAN / NAT / Internet) & Port Forwarding Guide
 
@@ -355,8 +206,8 @@ If KLens connects to your NVR, retrieves the camera names, but the video feeds f
    * In KLens, open **NVR Settings** (gear icon) and edit your recorder.
    * Set **RTSP Transport** to **`TCP`** (instead of Auto or UDP).
 
-3. **Ensure full installation (`sudo cmake --install build`):**
-   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/klens`), which is required for playback and archive features to locate auxiliary renderers.
+3. **Ensure full installation:**
+   Install the `.deb` package or run `./tools/install_ubuntu.sh`; both install the Hikvision SDK components under `/usr/lib/x86_64-linux-gnu/klens`, required by playback and archive features.
 
 4. **Verify RTSP stream outside KLens:**
    You can verify whether your camera's RTSP feed is reachable on your system by running:
@@ -380,43 +231,6 @@ If KLens connects to your NVR, retrieves the camera names, but the video feeds f
    
    Click **"Discover Cameras"** and add. If video plays with the mock server, KLens and custom port handling are functioning properly on your system, and any streaming failure with your real NVR is due to network/NAT/firewall routing or physical device configuration.
 
-### Manual Build using CMake (Any Linux distribution)
-
-If you are not using Arch Linux or Ubuntu, you can build the application manually using CMake.
-
-1. **Install Dependencies:** Ensure you have installed all required runtime and build dependencies listed above using your distribution's package manager.
-   For Arch/CachyOS:
-   ```bash
-   sudo pacman -S base-devel cmake qt5-declarative qt5-multimedia qt5-quickcontrols qt5-quickcontrols2 qt5-svg qt5-graphicaleffects qt5-tools ffmpeg git qt5-wayland
-   ```
-   *(Note: `qt5-wayland` or `qtwayland5` is highly recommended for native Wayland support).*
-2. **Configure the build directory:**
-   ```bash
-   cd klens
-   cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-   ```
-3. **Compile the project:**
-   ```bash
-   cmake --build build -j$(nproc)
-   ```
-4. **Install the application:**
-   ```bash
-   sudo cmake --install build
-   ```
-
-### Building on Windows (x64)
-
-KLens supports native 64-bit Windows builds using **MSVC 2022**, **Qt 5.15.2**, **FFmpeg**, and the **Hikvision Windows SDK (`EN-HCNetSDK`)**:
-- **Automated CI Build:** Use the included GitHub Actions workflow (`.github/workflows/build-windows.yml`) to automatically compile KLens and produce a portable `KLens-Windows-x64.zip` bundle with all required DLLs.
-- **Local Build & Configuration Guide:** See [BUILD_WINDOWS.md](BUILD_WINDOWS.md) for complete step-by-step instructions on building locally with CMake/Ninja/MSVC, deploying with `windeployqt`, locating `%APPDATA%\KVision\KVision.ini`, and migrating settings between Linux and Windows.
-
-For detailed usage instructions, check out the documentation files:
-- [English User Manual (INSTRUCTIONS.md)](INSTRUCTIONS.md)
-- [Bulgarian User Manual (INSTRUCTIONS_bg.md)](INSTRUCTIONS_bg.md)
-- [Windows Build Guide (BUILD_WINDOWS.md)](BUILD_WINDOWS.md)
-
----
-
 ## 🖥️ Desktop Scaling on KDE Plasma
 
 Starting from version 2.4.4, KLens automatically detects and correctly applies fractional desktop scaling (e.g., 125%, 145%, 150%) configured in KDE Plasma settings by enforcing native High DPI pass-through policies in Qt. The user interface should now scale correctly out-of-the-box without any manual intervention.
@@ -425,12 +239,7 @@ Starting from version 2.4.4, KLens automatically detects and correctly applies f
 
 To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KLens to run natively on Wayland instead of falling back to XWayland.
 
-For Arch Linux / Manjaro / CachyOS:
-```bash
-sudo pacman -S qt5-wayland
-```
-
-For Debian / Ubuntu / Linux Mint:
+For Debian / Ubuntu:
 ```bash
 sudo apt install qtwayland5
 ```
@@ -455,8 +264,6 @@ For Hikvision and general low-latency camera streaming over RTSP, we recommend c
 ```text
 -analyzeduration 100000 -probesize 500000 -fflags nobuffer -flags low_delay -rtsp_transport tcp
 ```
-
-> **[RECOMMENDATION]** If you are migrating from an older version (prior to v2.6.0), it is highly recommended to change `-analyzeduration 0` to `-analyzeduration 100000`. Setting `0` on streams without an audio track causes delays in switching because FFmpeg will block for a hardcoded 5-second timeout waiting for audio packets. Setting a very low value (e.g., 100000 microseconds = 0.1s) completely resolves this issue while maintaining instant switching.
 
 These parameters provide the lowest latency, fastest stream connection, and maximum stability over RTSP, preventing the camera streams from falling behind (drift) over long operational periods. The `-rtsp_transport tcp` option forces TCP transport instead of UDP for maximum stream stability on standard networks.
 

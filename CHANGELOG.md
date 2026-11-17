@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Release & Rebranding
 * Rebranded the application as **KLens** and started a new `1.0.0` version series.
 * Updated executable, package, desktop-entry, and release artifact identities to KLens while retaining existing KVision settings locations.
+* Limited supported builds and packages to Debian/Ubuntu `.deb` workflows and removed alternate distribution packaging.
 
 ## [2.7.8-1] - 2026-11-16
 

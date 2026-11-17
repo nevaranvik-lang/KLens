@@ -30,11 +30,12 @@ ui_*.h
 Makefile*
 *build-*
 build/
+/dist/
 *.qm
 *.prl
 
 # ...but workflows are not qmake build dirs, and "*build-*" matches
-# build-windows.yml
+# build-deb.yml
 !.github/workflows/*
 
 # Qt unit tests
@@ -65,9 +66,4 @@ test_arg.cpp
 test_layer.qml
 walkthrough.md
 
-# Package build files
-*.pkg.tar.zst
-/packaging/arch/klens/
 headless_app.log
-/packaging/arch/pkg/
-/packaging/arch/src/

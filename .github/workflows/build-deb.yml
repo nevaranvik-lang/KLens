@@ -1,4 +1,4 @@
-name: DEB Packages
+name: Debian and Ubuntu DEB Packages
 
 on:
   workflow_dispatch:
@@ -14,6 +14,7 @@ on:
       - "klens.desktop"
       - "debian/**"
       - "tools/build_deb.sh"
+      - "tools/install_ubuntu.sh"
       - ".github/workflows/build-deb.yml"
   pull_request:
     paths:
@@ -25,6 +26,7 @@ on:
       - "klens.desktop"
       - "debian/**"
       - "tools/build_deb.sh"
+      - "tools/install_ubuntu.sh"
       - ".github/workflows/build-deb.yml"
 
 jobs:
@@ -82,12 +84,12 @@ jobs:
           pattern: klens-deb-*
           merge-multiple: true
 
-      - name: Publish to rolling linux-latest pre-release
+      - name: Publish to rolling Debian release
         if: "!startsWith(github.ref, 'refs/tags/v')"
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: linux-latest
-          name: Linux DEB & AppImage (x64)
+          tag_name: debian-latest
+          name: Debian/Ubuntu DEB (x64)
           prerelease: true
           fail_on_unmatched_files: true
           files: release-assets/*.deb
