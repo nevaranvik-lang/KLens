@@ -17,7 +17,7 @@
 
 ## About KLens
 
-KLens is the rebranded continuation of [KVision (now KLens)](https://github.com/nevaranvik-lang/KLens), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
+KLens is the forked continuation of [KVision (now KLens)](https://github.com/Arkanista/KVision), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
 
 **KLens** is a high-performance VMS (Video Management System) class desktop application designed for simultaneous viewing of live video feeds (RTSP/ONVIF) and deep integration with Hikvision NVR/DVR video recorders (both Live view and synchronized Playback archives).
 
