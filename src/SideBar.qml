@@ -119,7 +119,7 @@ FocusScope {
     }
 
     function updatePresetDropHint(dropArea, drag) {
-        var accepted = drag.source && typeof drag.source.reorderIndex === "number";
+        var accepted = drag.source && typeof drag.source.reorderModelIndex === "number";
         dropArea.dropPreviewVisible = accepted;
         if (accepted) {
             dropArea.dropAfter = drag.y >= dropArea.height / 2;
@@ -130,12 +130,13 @@ FocusScope {
     }
 
     function dropPresetOnRow(drop, indices, targetIndex, dropAfter) {
-        if (!drop.source || typeof drop.source.reorderIndex !== "number") {
+        if (!drop.source || typeof drop.source.reorderModelIndex !== "number"
+                || targetIndex < 0 || targetIndex >= indices.length) {
             drop.accepted = false;
             return;
         }
 
-        var sourceIndex = drop.source.reorderIndex;
+        var sourceIndex = indices.indexOf(drop.source.reorderModelIndex);
         if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= indices.length) {
             drop.accepted = false;
             return;
@@ -1767,7 +1768,7 @@ FocusScope {
                                     implicitHeight: presetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
-                                    property int reorderIndex: index
+                                    property int reorderModelIndex: modelData
 
                                     Drag.active: presetDragArea.drag.active
                                     Drag.dragType: Drag.Internal
@@ -2006,7 +2007,7 @@ FocusScope {
                                     implicitHeight: nvrRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
-                                    property int reorderIndex: index
+                                    property int reorderModelIndex: modelData
 
                                     Drag.active: nvrDragArea.drag.active
                                     Drag.dragType: Drag.Internal
@@ -2214,7 +2215,7 @@ FocusScope {
                                     implicitHeight: nvrPresetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
-                                    property int reorderIndex: index
+                                    property int reorderModelIndex: modelData
 
                                     Drag.active: nvrPresetDragArea.drag.active
                                     Drag.dragType: Drag.Internal
