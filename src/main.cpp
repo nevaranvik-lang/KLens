@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -307,7 +308,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(QLatin1String(APP_NAME));
 #endif
 #if defined(APP_DISPLAY_NAME)
-    QCoreApplication::setApplicationDisplayName(QLatin1String(APP_DISPLAY_NAME));
+    QGuiApplication::setApplicationDisplayName(QLatin1String(APP_DISPLAY_NAME));
 #endif
 #if defined(APP_VERSION)
     QCoreApplication::setApplicationVersion(QLatin1String(APP_VERSION));
