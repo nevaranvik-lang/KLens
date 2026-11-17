@@ -119,7 +119,7 @@ FocusScope {
     }
 
     function updatePresetDropHint(dropArea, drag) {
-        var accepted = drag.hasFormat("application/x-klens-preset-index");
+        var accepted = drag.source && typeof drag.source.reorderIndex === "number";
         dropArea.dropPreviewVisible = accepted;
         if (accepted) {
             dropArea.dropAfter = drag.y >= dropArea.height / 2;
@@ -130,12 +130,12 @@ FocusScope {
     }
 
     function dropPresetOnRow(drop, indices, targetIndex, dropAfter) {
-        if (!drop.hasFormat("application/x-klens-preset-index")) {
+        if (!drop.source || typeof drop.source.reorderIndex !== "number") {
             drop.accepted = false;
             return;
         }
 
-        var sourceIndex = parseInt(drop.getDataAsString("application/x-klens-preset-index"), 10);
+        var sourceIndex = drop.source.reorderIndex;
         if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= indices.length) {
             drop.accepted = false;
             return;
@@ -1767,6 +1767,7 @@ FocusScope {
                                     implicitHeight: presetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
+                                    property int reorderIndex: index
 
                                     Drag.active: presetDragArea.drag.active
                                     Drag.dragType: Drag.Internal
@@ -2005,6 +2006,7 @@ FocusScope {
                                     implicitHeight: nvrRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
+                                    property int reorderIndex: index
 
                                     Drag.active: nvrDragArea.drag.active
                                     Drag.dragType: Drag.Internal
@@ -2212,6 +2214,7 @@ FocusScope {
                                     implicitHeight: nvrPresetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
+                                    property int reorderIndex: index
 
                                     Drag.active: nvrPresetDragArea.drag.active
                                     Drag.dragType: Drag.Internal
