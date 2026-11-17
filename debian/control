@@ -29,9 +29,8 @@ Vcs-Browser: https://github.com/nevaranvik-lang/KLens
 
 Package: klens
 Architecture: any
-Provides: kvision
-Replaces: kvision, cctv-viewer
-Breaks: kvision, cctv-viewer
+Replaces: cctv-viewer
+Breaks: cctv-viewer
 Depends: ${shlibs:Depends}, ${misc:Depends},
          ffmpeg,
          libqt5multimedia5-plugins,

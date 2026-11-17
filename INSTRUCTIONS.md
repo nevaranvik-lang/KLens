@@ -97,7 +97,7 @@ The supported targets are Debian 12/13 and Ubuntu 22.04+ (x86_64).
 
 Install a downloaded or locally built `.deb` package with apt:
 ```bash
-sudo apt install ./dist/klens_1.0.0-1_<distro>_amd64.deb
+sudo apt install ./dist/klens_1.0.1-1_<distro>_amd64.deb
 ```
 
 #### Build and install from source
@@ -256,6 +256,7 @@ In the bottom-right corner of each camera tile/viewport, a control panel with fi
 Layouts allow you to organize the arrangement of cameras on the screen. From the **Presets** tab (star icon) you can:
 * **Create New Presets**: Add your own layout with any configuration of columns and rows (e.g., 2x2, 3x3, 4x4).
 * **Assign Cameras**: Click on a viewport in the grid layout to select it, then open the NVR cameras window and click the **"+" (Add)** button on the desired camera tile. You can also swap viewport positions using the **"Swap viewports"** option in the source viewport's right-click context menu, then clicking on the target viewport.
+* **Reorder Presets**: Drag a preset using its dotted handle. A teal insertion line previews whether it will move before or after the hovered preset; the order is saved automatically.
 
 ### Top Bar Buttons (Top Tool Bar)
 The top sliding toolbar provides a comprehensive set of navigation and application control buttons:

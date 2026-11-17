@@ -103,6 +103,27 @@ void ViewportsLayoutsCollectionModel::remove(int index, int count)
     emit countChanged(m_models.size());
 }
 
+bool ViewportsLayoutsCollectionModel::move(int from, int to)
+{
+    if (from < 0 || from >= m_models.size() || to < 0 || to >= m_models.size()) {
+        return false;
+    }
+
+    if (from == to) {
+        return true;
+    }
+
+    const int destinationChild = to > from ? to + 1 : to;
+    if (!beginMoveRows(QModelIndex(), from, from, QModelIndex(), destinationChild)) {
+        return false;
+    }
+
+    m_models.move(from, to);
+    endMoveRows();
+    emit changed();
+    return true;
+}
+
 void ViewportsLayoutsCollectionModel::resize(int count)
 {
     if (count > m_models.size()) {

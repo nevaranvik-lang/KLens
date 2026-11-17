@@ -95,6 +95,64 @@ FocusScope {
         nvrPresetIndices = nvrPres;
     }
 
+    function movePresetInList(indices, fromIndex, toIndex) {
+        if (fromIndex < 0 || fromIndex >= indices.length || toIndex < 0 || toIndex >= indices.length) {
+            return false;
+        }
+
+        var fromModelIndex = indices[fromIndex];
+        var toModelIndex = indices[toIndex];
+        var activeLayout = stackLayout.currentIndex >= 0 ? layoutsCollectionModel.get(stackLayout.currentIndex) : null;
+        if (!layoutsCollectionModel.move(fromModelIndex, toModelIndex)) {
+            return false;
+        }
+
+        if (activeLayout) {
+            for (var i = 0; i < layoutsCollectionModel.count; ++i) {
+                if (layoutsCollectionModel.get(i) === activeLayout) {
+                    stackLayout.currentIndex = i;
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+
+    function updatePresetDropHint(dropArea, drag) {
+        var accepted = drag.hasFormat("application/x-klens-preset-index");
+        dropArea.dropPreviewVisible = accepted;
+        if (accepted) {
+            dropArea.dropAfter = drag.y >= dropArea.height / 2;
+            drag.accept(Qt.MoveAction);
+        } else {
+            drag.accepted = false;
+        }
+    }
+
+    function dropPresetOnRow(drop, indices, targetIndex, dropAfter) {
+        if (!drop.hasFormat("application/x-klens-preset-index")) {
+            drop.accepted = false;
+            return;
+        }
+
+        var sourceIndex = parseInt(drop.getDataAsString("application/x-klens-preset-index"), 10);
+        if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= indices.length) {
+            drop.accepted = false;
+            return;
+        }
+
+        var insertionIndex = targetIndex + (dropAfter ? 1 : 0);
+        if (sourceIndex < insertionIndex) {
+            insertionIndex--;
+        }
+
+        if (movePresetInList(indices, sourceIndex, insertionIndex)) {
+            drop.accept(Qt.MoveAction);
+        } else {
+            drop.accepted = false;
+        }
+    }
+
     Component.onCompleted: {
         layoutsCollectionModel.changed.connect(updateIndices);
         updateIndices();
@@ -1703,12 +1761,60 @@ FocusScope {
 
                             Repeater {
                                 model: rootSideBar.regularIndices
-                                delegate: RowLayout {
+                                delegate: Item {
                                     id: presetRow
-                                    spacing: 12
                                     Layout.fillWidth: true
+                                    implicitHeight: presetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
+
+                                    Drag.active: presetDragArea.drag.active
+                                    Drag.dragType: Drag.Internal
+                                    Drag.keys: ["klens-regular-preset"]
+                                    Drag.supportedActions: Qt.MoveAction
+                                    Drag.hotSpot.x: presetDragHandle.x + presetDragArea.mouseX
+                                    Drag.hotSpot.y: presetDragHandle.y + presetDragArea.mouseY
+                                    Drag.mimeData: {
+                                        "application/x-klens-preset-index": String(index)
+                                    }
+
+                                    RowLayout {
+                                        id: presetRowLayout
+                                        anchors.fill: parent
+                                        spacing: 12
+
+                                        Item {
+                                            id: presetDragHandle
+                                            implicitWidth: 18
+                                            implicitHeight: 28
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "⋮"
+                                                color: presetDragArea.containsMouse ? "#00f5d4" : "#8898a6"
+                                                font.pixelSize: 20
+                                            }
+
+                                            Item {
+                                                id: presetDragDummy
+                                                width: 1
+                                                height: 1
+                                                visible: false
+                                            }
+
+                                            MouseArea {
+                                                id: presetDragArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: drag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                                                drag.target: presetDragDummy
+                                                drag.threshold: 8
+                                                onReleased: {
+                                                    presetDragDummy.x = 0;
+                                                    presetDragDummy.y = 0;
+                                                }
+                                            }
+                                        }
 
                                     // Active preset indicator
                                     Rectangle {
@@ -1810,6 +1916,32 @@ FocusScope {
                                         ToolTip.timeout: Compact.toolTipTimeout
                                         ToolTip.visible: delPresetBtn.hovered
                                         ToolTip.text: qsTr("LNG_00286")
+                                    }
+                                    }
+                                    DropArea {
+                                        id: presetDropArea
+                                        anchors.fill: parent
+                                        keys: ["klens-regular-preset"]
+                                        property bool dropPreviewVisible: false
+                                        property bool dropAfter: false
+
+                                        onEntered: rootSideBar.updatePresetDropHint(presetDropArea, drag)
+                                        onPositionChanged: rootSideBar.updatePresetDropHint(presetDropArea, drag)
+                                        onExited: dropPreviewVisible = false
+                                        onDropped: {
+                                            rootSideBar.dropPresetOnRow(drop, rootSideBar.regularIndices, index, dropAfter);
+                                            dropPreviewVisible = false;
+                                        }
+
+                                        Rectangle {
+                                            x: 0
+                                            y: presetDropArea.dropAfter ? presetDropArea.height - height : 0
+                                            width: presetDropArea.width
+                                            height: 3
+                                            color: "#00f5d4"
+                                            visible: presetDropArea.dropPreviewVisible
+                                            z: 2
+                                        }
                                     }
                                 }
                             }
@@ -1999,12 +2131,60 @@ FocusScope {
 
                             Repeater {
                                 model: rootSideBar.nvrPresetIndices
-                                delegate: RowLayout {
+                                delegate: Item {
                                     id: nvrPresetRow
-                                    spacing: 12
                                     Layout.fillWidth: true
+                                    implicitHeight: nvrPresetRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
+
+                                    Drag.active: nvrPresetDragArea.drag.active
+                                    Drag.dragType: Drag.Internal
+                                    Drag.keys: ["klens-nvr-preset"]
+                                    Drag.supportedActions: Qt.MoveAction
+                                    Drag.hotSpot.x: nvrPresetDragHandle.x + nvrPresetDragArea.mouseX
+                                    Drag.hotSpot.y: nvrPresetDragHandle.y + nvrPresetDragArea.mouseY
+                                    Drag.mimeData: {
+                                        "application/x-klens-preset-index": String(index)
+                                    }
+
+                                    RowLayout {
+                                        id: nvrPresetRowLayout
+                                        anchors.fill: parent
+                                        spacing: 12
+
+                                        Item {
+                                            id: nvrPresetDragHandle
+                                            implicitWidth: 18
+                                            implicitHeight: 28
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "⋮"
+                                                color: nvrPresetDragArea.containsMouse ? "#00f5d4" : "#8898a6"
+                                                font.pixelSize: 20
+                                            }
+
+                                            Item {
+                                                id: nvrPresetDragDummy
+                                                width: 1
+                                                height: 1
+                                                visible: false
+                                            }
+
+                                            MouseArea {
+                                                id: nvrPresetDragArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: drag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                                                drag.target: nvrPresetDragDummy
+                                                drag.threshold: 8
+                                                onReleased: {
+                                                    nvrPresetDragDummy.x = 0;
+                                                    nvrPresetDragDummy.y = 0;
+                                                }
+                                            }
+                                        }
 
                                     Rectangle {
                                         width: 4
@@ -2100,6 +2280,32 @@ FocusScope {
                                         ToolTip.timeout: Compact.toolTipTimeout
                                         ToolTip.visible: delNvrPresetBtn.hovered
                                         ToolTip.text: qsTr("LNG_00276")
+                                    }
+                                    }
+                                    DropArea {
+                                        id: nvrPresetDropArea
+                                        anchors.fill: parent
+                                        keys: ["klens-nvr-preset"]
+                                        property bool dropPreviewVisible: false
+                                        property bool dropAfter: false
+
+                                        onEntered: rootSideBar.updatePresetDropHint(nvrPresetDropArea, drag)
+                                        onPositionChanged: rootSideBar.updatePresetDropHint(nvrPresetDropArea, drag)
+                                        onExited: dropPreviewVisible = false
+                                        onDropped: {
+                                            rootSideBar.dropPresetOnRow(drop, rootSideBar.nvrPresetIndices, index, dropAfter);
+                                            dropPreviewVisible = false;
+                                        }
+
+                                        Rectangle {
+                                            x: 0
+                                            y: nvrPresetDropArea.dropAfter ? nvrPresetDropArea.height - height : 0
+                                            width: nvrPresetDropArea.width
+                                            height: 3
+                                            color: "#00f5d4"
+                                            visible: nvrPresetDropArea.dropPreviewVisible
+                                            z: 2
+                                        }
                                     }
                                 }
                             }

@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void clear();
     Q_INVOKABLE ViewportsLayoutModel *insert(int index, ViewportsLayoutModel *p);
     Q_INVOKABLE void remove(int index, int count = 1);
+    Q_INVOKABLE bool move(int from, int to);
     Q_INVOKABLE ViewportsLayoutModel *append(ViewportsLayoutModel *p = nullptr) { return insert(m_models.size(), p); }
     Q_INVOKABLE void resize(int count);
 

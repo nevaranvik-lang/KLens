@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2026-11-17
+
+### Improvements
+* Added persistent reorder controls for camera and NVR presets in the settings tab.
+* Moved configuration storage to the KLens settings identity.
+
 ## [1.0.0] - 2026-11-17
 
 ### Release & Rebranding
