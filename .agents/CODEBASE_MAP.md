@@ -40,7 +40,7 @@ This document contains a complete technical index of all C++ classes, QML compon
 * **Invokables (`Q_INVOKABLE`)**:
   * `void setLanguage(const QString &langCode)` – Dynamically removes old `QTranslator` and installs new locale `.qm` file. Emits `languageChanged()`.
   * `QString getLanguage() const` – Returns active language code.
-  * `void startAuxiliaryProcess()` – Spawns child process `./kvision --auxiliary <nextId>`.
+  * `void startAuxiliaryProcess()` – Spawns child process `./klens --auxiliary <nextId>`.
   * `void trimMemory()` – Executes `malloc_trim(0)` on Linux glibc.
   * `bool mkpath(const QString &path)` / `bool dirExists(const QString &path)` / `QString homePath()` / `QUrl pathToUrl(const QString &path)` – Filesystem path utilities.
   * `QVariant readSetting(const QString &category, const QString &key, const QVariant &defaultVal)` – Reads from `QSettings`.

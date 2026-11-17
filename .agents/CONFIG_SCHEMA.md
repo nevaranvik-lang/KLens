@@ -1,4 +1,4 @@
-# KVision Configuration Schema & Key Dictionary
+# KLens Configuration Schema & Key Dictionary
 
 Configuration is stored in `~/.config/KVision/KVision.conf` (INI format).
 
@@ -22,7 +22,7 @@ Configuration is stored in `~/.config/KVision/KVision.conf` (INI format).
 | `disableAudio` | `bool` | `false` | Global audio muting toggle. |
 | `playbackOffsetSeconds` | `int` | `120` | Default rewind offset (in seconds) when opening archive playback. |
 | `playbackTimelineHours` | `int` | `2` | Visible time span (in hours) on the archive timeline bar. |
-| `enableDiagnosticLogs` | `bool` | `false` | Write FFmpeg & debug logs to `<config_dir>/log/kvision_diagnostic.log`. |
+| `enableDiagnosticLogs` | `bool` | `false` | Write FFmpeg & debug logs to `<config_dir>/log/klens_diagnostic.log`. |
 
 ---
 

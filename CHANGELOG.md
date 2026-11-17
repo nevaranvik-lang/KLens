@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-11-17
+
+### Release & Rebranding
+* Rebranded the application as **KLens** and started a new `1.0.0` version series.
+* Updated executable, package, desktop-entry, and release artifact identities to KLens while retaining existing KVision settings locations.
+
 ## [2.7.8-1] - 2026-11-16
 
 ### EN: Features, Improvements & Bug Fixes

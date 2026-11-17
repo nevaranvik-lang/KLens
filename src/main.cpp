@@ -51,13 +51,13 @@ void initFileLogging() {
     if (settings.value("enableDiagnosticLogs", false).toBool()) {
         QString logDir = QFileInfo(settings.fileName()).absolutePath() + "/log";
         QDir().mkpath(logDir);
-        QString logFilePath = logDir + "/kvision_diagnostic.log";
+        QString logFilePath = logDir + "/klens_diagnostic.log";
         QMutexLocker locker(&g_logMutex);
         if (!g_logFile) {
             g_logFile = new QFile(logFilePath);
             if (g_logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
                 QTextStream out(g_logFile);
-                out << "\n=== KVision Log Started at " << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") << " ===\n";
+                out << "\n=== KLens Log Started at " << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") << " ===\n";
             } else {
                 delete g_logFile;
                 g_logFile = nullptr;
@@ -306,6 +306,9 @@ int main(int argc, char *argv[])
 #if defined(APP_NAME)
     QCoreApplication::setApplicationName(QLatin1String(APP_NAME));
 #endif
+#if defined(APP_DISPLAY_NAME)
+    QCoreApplication::setApplicationDisplayName(QLatin1String(APP_DISPLAY_NAME));
+#endif
 #if defined(APP_VERSION)
     QCoreApplication::setApplicationVersion(QLatin1String(APP_VERSION));
 #endif
@@ -318,16 +321,16 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
     QSettings::setDefaultFormat(QSettings::IniFormat);
 #endif
-    QApplication::setDesktopFileName(QStringLiteral("kvision"));
+    QApplication::setDesktopFileName(QStringLiteral("klens"));
 
     registerQmlTypes();
 
     QApplication app(argc, argv);
     app.setFont(QFont("DejaVu Sans Condensed"));
-    app.setDesktopFileName(QStringLiteral("kvision"));
+    app.setDesktopFileName(QStringLiteral("klens"));
 
     QIcon appIcon;
-    appIcon.addFile(QStringLiteral(":/images/kvision.ico"));
+    appIcon.addFile(QStringLiteral(":/images/klens.ico"));
     appIcon.addFile(QStringLiteral(":/images/128.png"), QSize(128, 128));
     appIcon.addFile(QStringLiteral(":/images/256.png"), QSize(256, 256));
     appIcon.addFile(QStringLiteral(":/images/512.png"), QSize(512, 512));
@@ -338,7 +341,7 @@ int main(int argc, char *argv[])
         Context::init();
         initFileLogging();
         g_qmlav_enable_logs = Context::enableLogs();
-        qInfo() << "KVision version:" << APP_VERSION;
+        qInfo() << "KLens version:" << APP_VERSION;
         Context::initLanguage();
         QQmlApplicationEngine engine;
         Context::setEngine(&engine);
@@ -357,7 +360,7 @@ int main(int argc, char *argv[])
     Context::init();
     initFileLogging();
     g_qmlav_enable_logs = Context::enableLogs();
-    qInfo() << "KVision version:" << APP_VERSION;
+    qInfo() << "KLens version:" << APP_VERSION;
     Context::initLanguage();
 
     if (Context::isAuxiliary()) {

@@ -343,9 +343,9 @@ StatsWorker::~StatsWorker()
     if (!QDir(shmDir).exists() || !QFileInfo(shmDir).isWritable()) {
         shmDir = QDir::tempPath();
     }
-    QString myNetFile = QString("%1/kvision-net-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
-    QString myGpuFile = QString("%1/kvision-gpu-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
-    QString myVramFile = QString("%1/kvision-vram-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myNetFile = QString("%1/klens-net-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myGpuFile = QString("%1/klens-gpu-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myVramFile = QString("%1/klens-vram-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
     QFile::remove(myNetFile);
     QFile::remove(myGpuFile);
     QFile::remove(myVramFile);
@@ -485,12 +485,12 @@ QVector<qint64> StatsWorker::getProgramPids()
         CloseHandle(snap);
     }
 
-    // Pass 1: Find all direct KVision instances
+    // Pass 1: Find all direct KLens and legacy KVision instances
     for (const WinProcInfo &info : allProcs) {
         bool matches = false;
         if (!selfExeName.isEmpty() && info.exeName == selfExeName) {
             matches = true;
-        } else if (info.exeName == "kvision.exe" || info.exeName == "cctv-viewer2.exe" || info.exeName == "cctv-viewer.exe") {
+        } else if (info.exeName == "klens.exe" || info.exeName == "kvision.exe" || info.exeName == "cctv-viewer2.exe" || info.exeName == "cctv-viewer.exe") {
             matches = true;
         }
         if (matches && !pids.contains(info.pid)) {
@@ -591,8 +591,8 @@ QVector<qint64> StatsWorker::getProgramPids()
             if (cmdFile.open(QIODevice::ReadOnly)) {
                 QByteArray cmdline = cmdFile.readAll();
                 cmdFile.close();
-                if (cmdline.contains("kvision") || cmdline.contains("cctv-viewer2") || cmdline.contains("cctv-viewer")) {
-                    info.name = "kvision";
+                if (cmdline.contains("klens") || cmdline.contains("kvision") || cmdline.contains("cctv-viewer2") || cmdline.contains("cctv-viewer")) {
+                    info.name = cmdline.contains("klens") ? "klens" : "kvision";
                 }
             }
         }
@@ -605,7 +605,7 @@ QVector<qint64> StatsWorker::getProgramPids()
         bool matches = false;
         if (!selfExe.isEmpty() && !info.exePath.isEmpty() && info.exePath == selfExe) {
             matches = true;
-        } else if (info.name == "kvision" || info.name == "cctv-viewer2" || info.name == "cctv-viewer") {
+        } else if (info.name == "klens" || info.name == "kvision" || info.name == "cctv-viewer2" || info.name == "cctv-viewer") {
             matches = true;
         }
 
@@ -1011,7 +1011,7 @@ void StatsWorker::calculateGpuAndVram(const QVector<qint64> &pids, double &gpu, 
 #endif
 
     // Step B: Write OWN GPU and VRAM to shared memory files
-    QString myGpuFile = QString("%1/kvision-gpu-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myGpuFile = QString("%1/klens-gpu-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
     QFile fGpu(myGpuFile);
     if (fGpu.open(QIODevice::WriteOnly)) {
         QTextStream stream(&fGpu);
@@ -1019,7 +1019,7 @@ void StatsWorker::calculateGpuAndVram(const QVector<qint64> &pids, double &gpu, 
         fGpu.close();
     }
 
-    QString myVramFile = QString("%1/kvision-vram-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myVramFile = QString("%1/klens-vram-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
     QFile fVram(myVramFile);
     if (fVram.open(QIODevice::WriteOnly)) {
         QTextStream stream(&fVram);
@@ -1036,7 +1036,7 @@ void StatsWorker::calculateGpuAndVram(const QVector<qint64> &pids, double &gpu, 
             totalGpu += ownGpu;
             totalVram += ownVram;
         } else {
-            QString otherGpuFile = QString("%1/kvision-gpu-%2-%3").arg(shmDir).arg(myUid).arg(pid);
+            QString otherGpuFile = QString("%1/klens-gpu-%2-%3").arg(shmDir).arg(myUid).arg(pid);
             QFile fOtherGpu(otherGpuFile);
             if (fOtherGpu.open(QIODevice::ReadOnly)) {
                 double otherGpu = 0.0;
@@ -1046,7 +1046,7 @@ void StatsWorker::calculateGpuAndVram(const QVector<qint64> &pids, double &gpu, 
                 fOtherGpu.close();
             }
 
-            QString otherVramFile = QString("%1/kvision-vram-%2-%3").arg(shmDir).arg(myUid).arg(pid);
+            QString otherVramFile = QString("%1/klens-vram-%2-%3").arg(shmDir).arg(myUid).arg(pid);
             QFile fOtherVram(otherVramFile);
             if (fOtherVram.open(QIODevice::ReadOnly)) {
                 double otherVram = 0.0;
@@ -1082,7 +1082,7 @@ void StatsWorker::calculateNetUsage(const QVector<qint64> &pids, double &net)
     }
 
     // Write own network bps to shared file
-    QString myNetFile = QString("%1/kvision-net-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
+    QString myNetFile = QString("%1/klens-net-%2-%3").arg(shmDir).arg(myUid).arg(selfPid);
     QFile f(myNetFile);
     if (f.open(QIODevice::WriteOnly)) {
         QTextStream stream(&f);
@@ -1096,7 +1096,7 @@ void StatsWorker::calculateNetUsage(const QVector<qint64> &pids, double &net)
         if (pid == selfPid) {
             totalBps += bps;
         } else {
-            QString otherNetFile = QString("%1/kvision-net-%2-%3").arg(shmDir).arg(myUid).arg(pid);
+            QString otherNetFile = QString("%1/klens-net-%2-%3").arg(shmDir).arg(myUid).arg(pid);
             QFile fOther(otherNetFile);
             if (fOther.open(QIODevice::ReadOnly)) {
                 double otherBps = 0.0;
@@ -1116,9 +1116,9 @@ void StatsWorker::calculateNetUsage(const QVector<qint64> &pids, double &net)
     if (++cleanTicks >= 10) {
         cleanTicks = 0;
         QDir dir(shmDir);
-        QString prefixNet = QString("kvision-net-%1-").arg(myUid);
-        QString prefixGpu = QString("kvision-gpu-%1-").arg(myUid);
-        QString prefixVram = QString("kvision-vram-%1-").arg(myUid);
+        QString prefixNet = QString("klens-net-%1-").arg(myUid);
+        QString prefixGpu = QString("klens-gpu-%1-").arg(myUid);
+        QString prefixVram = QString("klens-vram-%1-").arg(myUid);
         
         QStringList netFiles = dir.entryList(QStringList() << prefixNet + "*", QDir::Files);
         for (const QString &fileName : netFiles) {

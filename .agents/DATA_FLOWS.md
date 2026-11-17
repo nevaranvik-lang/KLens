@@ -1,4 +1,4 @@
-# KVision Data Flows & Execution Lifecycles
+# KLens Data Flows & Execution Lifecycles
 
 This document details the step-by-step lifecycles, state machines, and sequence protocols across the system.
 

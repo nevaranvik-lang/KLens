@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# KVision - Automated .deb Package Builder (Debian 12/13 & Ubuntu 22.04+)
+# KLens - Automated .deb Package Builder (Debian 12/13 & Ubuntu 22.04+)
 # ==============================================================================
 set -euo pipefail
 
 if [ ! -f "CMakeLists.txt" ] || [ ! -f "debian/control" ]; then
-    echo "[-] Error: Run this script from the root of the KVision repository."
+    echo "[-] Error: Run this script from the root of the KLens repository."
     exit 1
 fi
 
@@ -60,20 +60,20 @@ fi
 PKG_VERSION="$(dpkg-parsechangelog -S Version)"
 DEB_ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
 
-echo "[*] Building .deb package: kvision ${PKG_VERSION} (${DISTRO_LABEL}, ${DEB_ARCH})..."
-rm -f ../kvision_*_"${DEB_ARCH}".deb ../kvision-dbgsym_*_"${DEB_ARCH}".* || true
+echo "[*] Building .deb package: klens ${PKG_VERSION} (${DISTRO_LABEL}, ${DEB_ARCH})..."
+rm -f ../klens_*_"${DEB_ARCH}".deb ../klens-dbgsym_*_"${DEB_ARCH}".* || true
 dpkg-buildpackage -us -uc -b -j"$(nproc)"
 
 mkdir -p dist
-BUILT_DEB="../kvision_${PKG_VERSION}_${DEB_ARCH}.deb"
+BUILT_DEB="../klens_${PKG_VERSION}_${DEB_ARCH}.deb"
 if [ ! -f "$BUILT_DEB" ]; then
-    BUILT_DEB="$(find .. -maxdepth 1 -name "kvision_*_${DEB_ARCH}.deb" ! -name '*-dbgsym_*' | head -n 1)"
+    BUILT_DEB="$(find .. -maxdepth 1 -name "klens_*_${DEB_ARCH}.deb" ! -name '*-dbgsym_*' | head -n 1)"
 fi
 if [ -z "$BUILT_DEB" ] || [ ! -f "$BUILT_DEB" ]; then
     echo "[-] Error: Built .deb package not found in parent directory."
     exit 1
 fi
 
-OUT_DEB="dist/kvision_${PKG_VERSION}_${DISTRO_LABEL}_${DEB_ARCH}.deb"
+OUT_DEB="dist/klens_${PKG_VERSION}_${DISTRO_LABEL}_${DEB_ARCH}.deb"
 mv -f "$BUILT_DEB" "$OUT_DEB"
 echo "[+] Created package: $OUT_DEB ($(du -h "$OUT_DEB" | cut -f1))"

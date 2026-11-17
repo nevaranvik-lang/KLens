@@ -1,4 +1,4 @@
-# KVision Development Guide & SDK Gotchas
+# KLens Development Guide & SDK Gotchas
 
 This document details domain-specific SDK rules, C data structures, error tables, and a diagnostic runbook for troubleshooting.
 
@@ -111,7 +111,7 @@ NET_DVR_WORKSTATE_V30 workState;
 ### Issue 1: "Black Screen / Loading Spinner Infinite on RTSP Stream"
 1. Verify camera URL formatting: `rtsp://[user]:[pass]@[ip]:[port]/Streaming/Channels/[ch]01` (Main) or `.../[ch]02` (Sub).
 2. Check `rtsp_transport` option in settings (Switch between `tcp` and `udp`).
-3. Launch with `./build/kvision --enable-logs` and inspect `~/.config/KVision/log/kvision_diagnostic.log` for FFmpeg decode errors.
+3. Launch with `./build/klens --enable-logs` and inspect `~/.config/KVision/log/klens_diagnostic.log` for FFmpeg decode errors.
 
 ### Issue 2: "Archive Playback Fails with SDK Error 23 on NVR"
 1. Logical channel `1` on NVR is physical channel `33` or `65`.
@@ -124,7 +124,7 @@ NET_DVR_WORKSTATE_V30 workState;
 
 ### Issue 4: "Auxiliary Window Won't Open"
 1. Verify `auxiliaryLimit` in `~/.config/KVision/KVision.conf` is greater than active count.
-2. Check `/proc` process listing for zombie `./kvision --auxiliary` processes.
+2. Check `/proc` process listing for zombie `./klens --auxiliary` processes.
 
 ---
 
@@ -136,13 +136,13 @@ cmake -B build -S .
 cmake --build build -j$(nproc)
 
 # 2. Run Main Instance
-./build/kvision
+./build/klens
 
 # 3. Run with Diagnostic Logging
-./build/kvision --enable-logs
+./build/klens --enable-logs
 
 # 4. Run Auxiliary Multi-Monitor Window
-./build/kvision --auxiliary 1
+./build/klens --auxiliary 1
 
 # 5. Run Live Stream Diagnostic Tool
 cmake --build build --target diagnose_live

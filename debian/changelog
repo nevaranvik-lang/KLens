@@ -1,12 +1,13 @@
-kvision (2.7.8-1) unstable; urgency=medium
+klens (1.0.0-1) unstable; urgency=medium
 
+  * Rebranded the application as KLens and started the 1.0.0 release series.
   * Refined the responsive toolbar layout in the main and auxiliary windows,
     wrapping view presets onto additional rows when the window is narrow; kept
     the archive playback toolbar within the window.
   * Made top bars auto-hide by default and persistently saved the pin setting;
     expanded the top-edge reveal area to 25 pixels.
 
- -- Arkanista <68946052+Arkanista@users.noreply.github.com>  Mon, 16 Nov 2026 12:55:00 +0200
+ -- Arkanista <68946052+Arkanista@users.noreply.github.com>  Tue, 17 Nov 2026 10:08:00 +0200
 
 kvision (2.7.7-1) unstable; urgency=medium
 

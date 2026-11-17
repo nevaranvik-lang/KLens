@@ -10,8 +10,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.rc"
+      - "klens.qrc"
+      - "klens.rc"
       - "qtquickcontrols2.conf"
       - ".github/workflows/build-windows.yml"
   pull_request:
@@ -20,8 +20,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.rc"
+      - "klens.qrc"
+      - "klens.rc"
       - "qtquickcontrols2.conf"
       - ".github/workflows/build-windows.yml"
 
@@ -138,26 +138,26 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $out = "pkg"
           New-Item -ItemType Directory -Force -Path $out | Out-Null
-          $exe = "build\Release\kvision.exe"
-          if (-not (Test-Path $exe)) { $exe = "build\kvision.exe" }
-          if (-not (Test-Path $exe)) { throw "kvision.exe not built" }
+          $exe = "build\Release\klens.exe"
+          if (-not (Test-Path $exe)) { $exe = "build\klens.exe" }
+          if (-not (Test-Path $exe)) { throw "klens.exe not built" }
           Copy-Item $exe $out\
-          & "$env:QT_DIR\bin\windeployqt.exe" --release --qmldir src "$out\kvision.exe"
+          & "$env:QT_DIR\bin\windeployqt.exe" --release --qmldir src "$out\klens.exe"
           Copy-Item "$env:HIK_LIB\*" $out\ -Recurse -Force
           Copy-Item "$env:FFMPEG_BIN\*.dll" $out\
           if (Test-Path "$env:FFMPEG_BIN\ffmpeg.exe") {
             Copy-Item "$env:FFMPEG_BIN\ffmpeg.exe" $out\
           }
-          Compress-Archive -Path "$out\*" -DestinationPath KVision-windows-x64.zip
+          Compress-Archive -Path "$out\*" -DestinationPath KLens-windows-x64.zip
           Write-Host "--- package ---"
           Get-ChildItem $out | Select-Object -First 40 | ForEach-Object { Write-Host $_.Name }
-          Write-Host "zip: $((Get-Item KVision-windows-x64.zip).Length) bytes"
+          Write-Host "zip: $((Get-Item KLens-windows-x64.zip).Length) bytes"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: KVision-windows-x64
-          path: KVision-windows-x64.zip
+          name: KLens-windows-x64
+          path: KLens-windows-x64.zip
 
       # Same tag every run, so the release keeps one stable download URL and
       # the asset is replaced in place instead of piling up builds.
@@ -170,12 +170,12 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: true
           body: |
-            Windows x64 build of KVision.
+            Windows x64 build of KLens.
 
             MSVC 2022 (Visual Studio 17), Qt 5.15.2 msvc2019_64, FFmpeg 8.1
             shared, Hikvision HCNetSDK 6.1.9.48 runtime. Unpack anywhere and run
-            `kvision.exe`; devices on the LAN are discovered on first start.
-          files: KVision-windows-x64.zip
+            `klens.exe`; devices on the LAN are discovered on first start.
+          files: KLens-windows-x64.zip
 
       - name: Attach Windows package to version release tag
         if: "startsWith(github.ref, 'refs/tags/v')"
@@ -183,4 +183,4 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           fail_on_unmatched_files: true
-          files: KVision-windows-x64.zip
+          files: KLens-windows-x64.zip

@@ -10,8 +10,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.desktop"
+      - "klens.qrc"
+      - "klens.desktop"
       - "debian/**"
       - "tools/build_deb.sh"
       - ".github/workflows/build-deb.yml"
@@ -21,8 +21,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.desktop"
+      - "klens.qrc"
+      - "klens.desktop"
       - "debian/**"
       - "tools/build_deb.sh"
       - ".github/workflows/build-deb.yml"
@@ -64,7 +64,7 @@ jobs:
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kvision-deb-${{ matrix.label }}
+          name: klens-deb-${{ matrix.label }}
           path: dist/*.deb
 
   publish-deb:
@@ -79,7 +79,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-assets
-          pattern: kvision-deb-*
+          pattern: klens-deb-*
           merge-multiple: true
 
       - name: Publish to rolling linux-latest pre-release

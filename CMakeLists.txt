@@ -1,20 +1,22 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(VER_MAJ 2)
-set(VER_MIN 7)
-set(VER_PAT 8)
+set(VER_MAJ 1)
+set(VER_MIN 0)
+set(VER_PAT 0)
 if(NOT DEFINED VER_REL)
     set(VER_REL 1)
 endif()
 # set(REL_STATUS "rc5")
 
+# Keep the QSettings identity stable so existing user configuration remains available.
 set(APP_NAME "KVision")
+set(APP_DISPLAY_NAME "KLens")
 set(ORG_NAME "KVision")
 set(ORG_DOMAIN "kvision.org")
 
 set(VERSION "${VER_MAJ}.${VER_MIN}.${VER_PAT}")
 
-project(kvision VERSION ${VERSION} HOMEPAGE_URL "https://github.com/arkanista/kvision" LANGUAGES C CXX)
+project(klens VERSION ${VERSION} HOMEPAGE_URL "https://github.com/arkanista/kvision" LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 
@@ -67,6 +69,7 @@ set(VERSION "${VERSION} ${PACKAGER}.${GIT_COMMIT} (${CMAKE_SYSTEM_PROCESSOR})")
 
 add_compile_definitions(
     $<$<COMPILE_LANGUAGE:C,CXX>:APP_NAME="${APP_NAME}">
+    $<$<COMPILE_LANGUAGE:C,CXX>:APP_DISPLAY_NAME="${APP_DISPLAY_NAME}">
     $<$<COMPILE_LANGUAGE:C,CXX>:APP_VERSION="${VERSION}">
     $<$<COMPILE_LANGUAGE:C,CXX>:ORG_NAME="${ORG_NAME}">
     $<$<COMPILE_LANGUAGE:C,CXX>:ORG_DOMAIN="${ORG_DOMAIN}">
@@ -176,12 +179,12 @@ endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (${QT_VERSION_MAJOR} GREATER 5)
-        qt_add_resources(RESOURCES kvision.qrc)
+        qt_add_resources(RESOURCES klens.qrc)
     else()
-        qt5_add_resources(RESOURCES kvision.qrc)
+        qt5_add_resources(RESOURCES klens.qrc)
     endif()
 else()
-    qtquick_compiler_add_resources(RESOURCES kvision.qrc)
+    qtquick_compiler_add_resources(RESOURCES klens.qrc)
 endif()
 
 set(PROJ_FILES
@@ -213,48 +216,48 @@ set(QML_IMPORT_PATH "${CMAKE_SOURCE_DIR}/src/imports" CACHE STRING "Additional i
 add_subdirectory(src/qmlav)
 
 if (ANDROID)
-    add_library(kvision SHARED ${PROJ_FILES} ${QMLAV_FILES})
+    add_library(klens SHARED ${PROJ_FILES} ${QMLAV_FILES})
 
-    target_include_directories(kvision PRIVATE "${CMAKE_SOURCE_DIR}/src/qmlav/3rd/FFmpeg/ffbuild/${ANDROID_ABI}/include")
-    target_link_directories(kvision PRIVATE "${CMAKE_SOURCE_DIR}/src/qmlav/3rd/FFmpeg/ffbuild/${ANDROID_ABI}/lib")
+    target_include_directories(klens PRIVATE "${CMAKE_SOURCE_DIR}/src/qmlav/3rd/FFmpeg/ffbuild/${ANDROID_ABI}/include")
+    target_link_directories(klens PRIVATE "${CMAKE_SOURCE_DIR}/src/qmlav/3rd/FFmpeg/ffbuild/${ANDROID_ABI}/lib")
 else()
     if(WIN32)
-        list(APPEND PROJ_FILES kvision.rc)
+        list(APPEND PROJ_FILES klens.rc)
     endif()
-    add_executable(kvision ${PROJ_FILES} ${QMLAV_FILES})
+    add_executable(klens ${PROJ_FILES} ${QMLAV_FILES})
     if(WIN32)
-        set_target_properties(kvision PROPERTIES WIN32_EXECUTABLE TRUE)
+        set_target_properties(klens PROPERTIES WIN32_EXECUTABLE TRUE)
     endif()
 endif()
 
-target_include_directories(kvision PRIVATE ${QMLAV_INCLUDE})
+target_include_directories(klens PRIVATE ${QMLAV_INCLUDE})
 
-target_compile_definitions(kvision
+target_compile_definitions(klens
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 
 foreach (ITEM ${QT_LINK_DEPENDENCIES})
-    target_link_libraries(kvision PRIVATE Qt${QT_VERSION_MAJOR}::${ITEM})
+    target_link_libraries(klens PRIVATE Qt${QT_VERSION_MAJOR}::${ITEM})
 endforeach()
-target_link_libraries(kvision PRIVATE ${QMLAV_LINK_DEPENDENCIES})
-target_include_directories(kvision PRIVATE "${CMAKE_SOURCE_DIR}/src/hikvision_sdk/inc")
-target_link_directories(kvision PRIVATE "${CMAKE_SOURCE_DIR}/src/hikvision_sdk/lib")
-target_link_libraries(kvision PRIVATE hcnetsdk PlayCtrl)
+target_link_libraries(klens PRIVATE ${QMLAV_LINK_DEPENDENCIES})
+target_include_directories(klens PRIVATE "${CMAKE_SOURCE_DIR}/src/hikvision_sdk/inc")
+target_link_directories(klens PRIVATE "${CMAKE_SOURCE_DIR}/src/hikvision_sdk/lib")
+target_link_libraries(klens PRIVATE hcnetsdk PlayCtrl)
 # Use RPATH (not RUNPATH) so transitive deps (libAudioRender.so, libSuperRender.so) loaded
 # by libPlayCtrl.so/libhcnetsdk.so can also be found via this path.
 if(UNIX)
-target_link_options(kvision PRIVATE 
+target_link_options(klens PRIVATE
     "LINKER:--disable-new-dtags"
     "LINKER:-rpath-link,${CMAKE_SOURCE_DIR}/src/hikvision_sdk/lib"
 )
 endif()
-set_target_properties(kvision PROPERTIES
+set_target_properties(klens PROPERTIES
     BUILD_RPATH "\$ORIGIN/../src/hikvision_sdk/lib"
-    INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/kvision"
+    INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/klens"
     BUILD_WITH_INSTALL_RPATH FALSE
     INSTALL_RPATH_USE_LINK_PATH FALSE
 )
 if (NOT ANDROID)
-    set_target_properties(kvision PROPERTIES OUTPUT_NAME "kvision")
+    set_target_properties(klens PROPERTIES OUTPUT_NAME "klens")
 
     add_executable(diagnose_archive src/diagnose_archive.cpp)
     target_include_directories(diagnose_archive PRIVATE "${CMAKE_SOURCE_DIR}/src/hikvision_sdk/inc")
@@ -303,11 +306,11 @@ set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM true)
 
 if (UNIX AND NOT ANDROID)
     set(CMAKE_INSTALL_PREFIX "/usr")
-    install(TARGETS kvision DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    install(FILES "images/128.png" DESTINATION "/usr/share/icons/hicolor/128x128/apps" RENAME "kvision.png")
-    install(FILES "images/256.png" DESTINATION "/usr/share/icons/hicolor/256x256/apps" RENAME "kvision.png")
-    install(FILES "images/512.png" DESTINATION "/usr/share/icons/hicolor/512x512/apps" RENAME "kvision.png")
-    install(FILES "images/512.png" DESTINATION "/usr/share/pixmaps" RENAME "kvision.png")
-    install(FILES "kvision.desktop" DESTINATION "/usr/share/applications")
-    install(DIRECTORY "src/hikvision_sdk/lib/" DESTINATION "${CMAKE_INSTALL_LIBDIR}/kvision")
+    install(TARGETS klens DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES "images/128.png" DESTINATION "/usr/share/icons/hicolor/128x128/apps" RENAME "klens.png")
+    install(FILES "images/256.png" DESTINATION "/usr/share/icons/hicolor/256x256/apps" RENAME "klens.png")
+    install(FILES "images/512.png" DESTINATION "/usr/share/icons/hicolor/512x512/apps" RENAME "klens.png")
+    install(FILES "images/512.png" DESTINATION "/usr/share/pixmaps" RENAME "klens.png")
+    install(FILES "klens.desktop" DESTINATION "/usr/share/applications")
+    install(DIRECTORY "src/hikvision_sdk/lib/" DESTINATION "${CMAKE_INSTALL_LIBDIR}/klens")
 endif()

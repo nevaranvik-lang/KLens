@@ -16,7 +16,7 @@
         </message>
         <message>
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <source>LNG_00002</source>
@@ -91,7 +91,7 @@
         </message>
         <message>
             <source>LNG_00018</source>
-            <translation>KVision - Допълнителен прозорец</translation>
+            <translation>KLens - Допълнителен прозорец</translation>
         </message>
         <message>
             <source>LNG_00017</source>
@@ -715,7 +715,7 @@
         </message>
         <message>
             <source>LNG_00057</source>
-            <translation>KVision - Ръководство за потребителя / Инструкции</translation>
+            <translation>KLens - Ръководство за потребителя / Инструкции</translation>
         </message>
         <message>
             <source>LNG_00056</source>
@@ -2252,11 +2252,11 @@
         </message>
         <message>
             <source>LNG_00018</source>
-            <translation>KVision - Допълнителен прозорец</translation>
+            <translation>KLens - Допълнителен прозорец</translation>
         </message>
         <message>
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <source>LNG_00219</source>
@@ -2332,7 +2332,7 @@
         </message>
         <message>
             <source>LNG_00210</source>
-            <translation>KVision - Панел</translation>
+            <translation>KLens - Панел</translation>
         </message>
         <message>
             <source>LNG_00121</source>
@@ -3883,7 +3883,7 @@
         </message>
         <message>
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <source>LNG_00319</source>
@@ -4429,7 +4429,7 @@
         </message>
         <message>
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <source>LNG_00453</source>

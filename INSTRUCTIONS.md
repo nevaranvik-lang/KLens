@@ -1,9 +1,9 @@
-# User Manual for KVision
+# User Manual for KLens
 
 > [!NOTE]
 > This instruction manual has been automatically translated and formatted with the assistance of Artificial Intelligence (AI).
 
-**KVision** is an advanced VMS (Video Management System) class desktop application designed for simultaneous viewing of live video streams (RTSP/ONVIF) and integration with Hikvision NVR/DVR recorders (both in Live mode and Playback archive mode).
+**KLens** is an advanced VMS (Video Management System) class desktop application designed for simultaneous viewing of live video streams (RTSP/ONVIF) and integration with Hikvision NVR/DVR recorders (both in Live mode and Playback archive mode).
 
 The program has been optimized for stability, smooth operation (60 FPS), and minimal system resource consumption.
 
@@ -92,9 +92,9 @@ This section describes the meaning of all graphical icons and buttons used in th
 ### Installing on Arch Linux (Pacman)
 To install the program from the prepared binary package, go to the `packaging/arch/` directory and run:
 ```bash
-sudo pacman -U kvision-2.7.6-2-x86_64.pkg.tar.zst
+sudo pacman -U klens-1.0.0-1-x86_64.pkg.tar.zst
 ```
-The package will automatically install the program, the `.desktop` activation file, and the required Hikvision SDK libraries to the system path `/usr/lib/kvision`.
+The package will automatically install the program, the `.desktop` activation file, and the required Hikvision SDK libraries to the system path `/usr/lib/klens`.
 
 ### Manual Compilation (from source code)
 If you want to compile the program manually (e.g., on another Linux distribution) instead of using the ready-made package:
@@ -119,10 +119,10 @@ If you want to compile the program manually (e.g., on another Linux distribution
 ### Installing on Ubuntu / Debian (and derivatives)
 
 #### Option A: Quick Automated Installer (Recommended)
-You can compile and install KVision with all dependencies in a single step using the provided setup script:
+You can compile and install KLens with all dependencies in a single step using the provided setup script:
 ```bash
-git clone --recurse-submodules https://github.com/Arkanista/KVision.git
-cd KVision
+git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
+cd klens
 ./tools/install_ubuntu.sh
 ```
 
@@ -155,13 +155,13 @@ cd KVision
 ### Launching
 The program can be launched from the system menu or by typing in the terminal:
 ```bash
-kvision
+klens
 ```
 
 ### 🔧 Troubleshooting: Video Streams & Ubuntu Setup
 
 #### Cameras are discovered, but Live View shows a black screen or exclamation mark
-If KVision connects to your NVR, retrieves the camera names, but the video feeds fail to play:
+If KLens connects to your NVR, retrieves the camera names, but the video feeds fail to play:
 
 1. **Missing QtMultimedia runtime plugins (Ubuntu/Debian):**
    Make sure runtime multimedia plugins are installed (these are separate from development headers):
@@ -173,25 +173,25 @@ If KVision connects to your NVR, retrieves the camera names, but the video feeds
 
 2. **RTSP Transport Protocol (UDP vs TCP):**
    By default, RTSP stream negotiation may attempt UDP. Most network firewalls, routers with port forwarding (NAT), and many Hikvision units drop UDP packets.
-   * In KVision, open **NVR Settings** (gear icon) and edit your recorder.
+   * In KLens, open **NVR Settings** (gear icon) and edit your recorder.
    * Set **RTSP Transport** to **`TCP`** (instead of Auto or UDP).
 
 3. **Ensure full installation (`sudo cmake --install build`):**
-   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/kvision`), which is required for playback and archive features to locate auxiliary renderers.
+   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/klens`), which is required for playback and archive features to locate auxiliary renderers.
 
-4. **Verify RTSP stream outside KVision:**
+4. **Verify RTSP stream outside KLens:**
    You can verify whether your camera's RTSP feed is reachable on your system by running:
    ```bash
    ffplay -rtsp_transport tcp "rtsp://USER:PASSWORD@IP:PORT/Streaming/Channels/101"
    ```
-   If `ffplay` streams video properly with `-rtsp_transport tcp`, but KVision displays a black screen, verify that `libqt5multimedia5-plugins` is installed.
+   If `ffplay` streams video properly with `-rtsp_transport tcp`, but KLens displays a black screen, verify that `libqt5multimedia5-plugins` is installed.
 
 5. **Isolate Network/Router vs Local Issues using the Mock NVR Server:**
    You can run a local simulated Hikvision NVR to test streaming and custom ports in a completely isolated environment (no external network, router, or physical NVR needed):
    ```bash
    python3 tools/mock_hikvision_server.py --http-port 17080 --rtsp-port 17554
    ```
-   Then in KVision, add a new NVR with:
+   Then in KLens, add a new NVR with:
    * **IP:** `127.0.0.1`
    * **HTTP Port:** `17080`
    * **RTSP Port:** `17554`
@@ -199,15 +199,15 @@ If KVision connects to your NVR, retrieves the camera names, but the video feeds
    * **Password:** `12345`
    * **RTSP Transport:** `TCP`
    
-   Click **"Discover Cameras"** and add. If video plays with the mock server, KVision and custom port handling are functioning properly on your system, and any streaming failure with your real NVR is due to network/NAT/firewall routing or physical device configuration.
+   Click **"Discover Cameras"** and add. If video plays with the mock server, KLens and custom port handling are functioning properly on your system, and any streaming failure with your real NVR is due to network/NAT/firewall routing or physical device configuration.
 
 ### Troubleshooting System Scaling (KDE Plasma)
 
-Starting from version 2.4.4, KVision automatically detects and correctly applies fractional desktop scaling (e.g., 125%, 145%, 150%) configured in KDE Plasma settings by enforcing native High DPI pass-through policies in Qt. The user interface should now scale correctly out-of-the-box without any manual intervention.
+Starting from version 2.4.4, KLens automatically detects and correctly applies fractional desktop scaling (e.g., 125%, 145%, 150%) configured in KDE Plasma settings by enforcing native High DPI pass-through policies in Qt. The user interface should now scale correctly out-of-the-box without any manual intervention.
 
 #### Native Wayland Support
 
-To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KVision to run natively on Wayland instead of falling back to XWayland.
+To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KLens to run natively on Wayland instead of falling back to XWayland.
 
 For Arch Linux / Manjaro / CachyOS:
 ```bash
@@ -225,10 +225,10 @@ If you are running an older version, an unusual configuration, or simply wish to
 
 For example, to force **150%** scaling, launch the application from the terminal with:
 ```bash
-env QT_FONT_DPI=96 QT_SCALE_FACTOR=1.5 kvision
+env QT_FONT_DPI=96 QT_SCALE_FACTOR=1.5 klens
 ```
 
-*(You can permanently apply this by editing the application launcher `kvision.desktop` in the KDE menu editor and adding these variables to the "Environment variables" field).*
+*(You can permanently apply this by editing the application launcher `klens.desktop` in the KDE menu editor and adding these variables to the "Environment variables" field).*
 
 ---
 
@@ -327,7 +327,7 @@ Opening the Hamburger (More Options) menu brings up a specialized layout toolbox
 
 Sliding out from the left edge of the Live View screen, this panel monitors the computer's health and the load generated by the application:
 * **Monitored Parameters**:
-  * **CPU / RAM**: Usage of the main processor (in % of all cores) and the RAM used directly by the `kvision` process and its related downloader subprocesses.
+  * **CPU / RAM**: Usage of the main processor (in % of all cores) and the RAM used directly by the `klens` process and its related downloader subprocesses.
   * **GPU / VRAM**: Graphics card core utilization (in %) and the amount of VRAM graphic memory occupied by rendering and hardware decoding (supports full listing of GPU processes using the XML parser from `nvidia-smi`).
   * **NETWORK (Net)**: Actual download transfer speed of the application from all active live players, archive players, and recording download processes.
 * **Multithreading (Stutter-Free)**: Process and GPU data collection runs on a separate system thread (`StatsWorker`). This prevents any micro-stuttering in video rendering (no frame drops).
@@ -413,7 +413,7 @@ Manager for your saved grid layouts and camera assignments. Allows creating empt
 
 ### 5. Settings (Gear Icon)
 Allows adjusting global application settings:
-* **Allow running multiple instances**: Checking this box allows launching multiple parallel copies of the KVision process (by default, it restricts runs to a single active instance).
+* **Allow running multiple instances**: Checking this box allows launching multiple parallel copies of the KLens process (by default, it restricts runs to a single active instance).
 * **Auto-collapse settings**: Customizes sliding animation timing for the top bar and statistics panel.
 * **Allow swapping viewports**: The checkbox *„Allow swapping viewport places”* enables you to rearrange camera positions on the grid on the fly (Right-click source tile -> Choose "Swap viewports" -> Left-click target tile).
 * **Right-click permissions**: Switches to lock/unlock interactive controls in the right-click context menu (Enable context menu, Allow swapping viewports, Enable 'Remove camera' option, Allow changing viewport settings, Enable stream Main/Sub quality selection).
@@ -422,7 +422,7 @@ Allows adjusting global application settings:
 * **Language selection**: Instantly switches interface translation (System default, English, Bulgarian).
 * **UI Preferences**: Hide/show viewport status labels or control badges (such as auto-hiding the control overlays in the bottom right corner of tiles unless hovering).
 * **Default FFmpeg Options & Bulk Update**: Allows configuring global FFmpeg options applied to new viewports (recommended: `-analyzeduration 100000 -probesize 500000 -fflags nobuffer -flags low_delay`).
-  * > **[RECOMMENDATION]** If you are migrating from an older version of KVision (prior to v2.4.5), it is highly recommended to change `-analyzeduration 0` to `-analyzeduration 100000` in the global settings and click "Update all cameras". Setting `0` on streams without an audio track causes delays in switching because FFmpeg will block for a hardcoded 5-second timeout waiting for audio packets. Setting a very low value (e.g., 100000 microseconds = 0.1s) completely resolves this issue while maintaining instant switching.
+  * > **[RECOMMENDATION]** If you are migrating from an older version of KLens (prior to v2.4.5), it is highly recommended to change `-analyzeduration 0` to `-analyzeduration 100000` in the global settings and click "Update all cameras". Setting `0` on streams without an audio track causes delays in switching because FFmpeg will block for a hardcoded 5-second timeout waiting for audio packets. Setting a very low value (e.g., 100000 microseconds = 0.1s) completely resolves this issue while maintaining instant switching.
   * **Update all cameras button**: This button applies these global options to all configured viewports.
   * **Low-latency flags (`nobuffer`, `low_delay`)**:
     * `-fflags nobuffer` disables internal demuxer packet buffering to eliminate streaming lag over time, but might cause stuttering if your network connection to the camera is unstable.
@@ -431,7 +431,7 @@ Allows adjusting global application settings:
 
 
 ### 6. Changelog (Clock/Document Icon)
-Presents an interactive timeline showing the complete release history, updates, bug fixes, and feature additions of KVision, ensuring you have direct access to program updates details.
+Presents an interactive timeline showing the complete release history, updates, bug fixes, and feature additions of KLens, ensuring you have direct access to program updates details.
 
 ---
 

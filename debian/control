@@ -1,4 +1,4 @@
-Source: kvision
+Source: klens
 Section: video
 Priority: optional
 Maintainer: Arkanista <68946052+Arkanista@users.noreply.github.com>
@@ -27,10 +27,11 @@ Homepage: https://github.com/arkanista/kvision
 Vcs-Git: https://github.com/arkanista/kvision.git
 Vcs-Browser: https://github.com/arkanista/kvision
 
-Package: kvision
+Package: klens
 Architecture: any
-Replaces: cctv-viewer
-Breaks: cctv-viewer
+Provides: kvision
+Replaces: kvision, cctv-viewer
+Breaks: kvision, cctv-viewer
 Depends: ${shlibs:Depends}, ${misc:Depends},
          ffmpeg,
          libqt5multimedia5-plugins,
@@ -47,7 +48,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
          qml-module-qt-labs-settings,
          qml-module-qt-labs-folderlistmodel,
          qml-module-qtmultimedia
-Description: KVision - NVR and IP camera viewing application
+Description: KLens - NVR and IP camera viewing application
  A cross-platform application for simultaneously viewing multiple IP camera
  video streams and managing Hikvision NVR/DVR live view and archive playback.
  Designed for high performance and low latency using Qt5, QML, and FFmpeg.

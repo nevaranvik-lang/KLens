@@ -1,4 +1,4 @@
-# KVision
+# KLens
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -15,11 +15,11 @@
 
 ---
 
-## About KVision
+## About KLens
 
-This is a simplified fork of [Arkanista/KVision](https://github.com/Arkanista/KVision), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
+KLens is the rebranded continuation of [Arkanista/KVision](https://github.com/Arkanista/KVision), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
 
-**KVision** is a high-performance VMS (Video Management System) class desktop application designed for simultaneous viewing of live video feeds (RTSP/ONVIF) and deep integration with Hikvision NVR/DVR video recorders (both Live view and synchronized Playback archives).
+**KLens** is a high-performance VMS (Video Management System) class desktop application designed for simultaneous viewing of live video feeds (RTSP/ONVIF) and deep integration with Hikvision NVR/DVR video recorders (both Live view and synchronized Playback archives).
 
 It is designed for Linux users who need a robust, lightweight, and smooth alternative to bloated proprietary software.
 
@@ -75,7 +75,7 @@ It is designed for Linux users who need a robust, lightweight, and smooth altern
 ### 📊 Multi-Threaded System Statistics Panel
 * **Slide-Out Overlay**: Hover and slide the left edge of the screen to reveal a diagnostic monitoring overlay.
 * **Metrics Tracked**:
-  * **CPU & RAM**: Total system CPU load (%) and the memory consumed by `kvision` and its download subprocesses.
+  * **CPU & RAM**: Total system CPU load (%) and the memory consumed by `klens` and its download subprocesses.
   * **GPU & VRAM**: Core graphics card utilization and video memory usage (real-time XML parsing of `nvidia-smi` data, filtering only relevant process allocations).
   * **Network Bandwidth**: Live download speed aggregated from all active video players and download subprocesses.
 * **Pin Feature**: Click the pin icon to keep the stats panel locked open, or let it slide away automatically.
@@ -92,7 +92,7 @@ It is designed for Linux users who need a robust, lightweight, and smooth altern
   * `Alt + Left` / `Alt + Right`: Switch layouts.
   * `Alt + 1` to `Alt + 9`: Instant preset switching.
 * **Language support**: Live translation switching between English and Bulgarian, with an optional system-language selection that falls back to English for other locales.
-* **Cross-Platform Settings Import / Export**: Dedicated **Import / Export** tab in the side panel (below Settings) allowing one-click backup and migration of configuration files (`*.conf` / `*.ini`) between Linux (`~/.config/KVision/KVision.conf`) and Windows (`%APPDATA%\KVision\KVision.ini`), with automatic OS path adaptation for snapshot and video directories.
+* **Cross-Platform Settings Import / Export**: Dedicated **Import / Export** tab in the side panel (below Settings) allowing one-click backup and migration of configuration files (`*.conf` / `*.ini`) between Linux (`~/.config/KVision/KVision.conf`) and Windows (`%APPDATA%\KVision\KVision.ini`), with automatic OS path adaptation for snapshot and video directories. KLens intentionally retains these KVision paths so existing settings remain available.
 
 ---
 
@@ -175,10 +175,12 @@ To build and run the application, the following packages are required:
 
 To clone this repository, make sure you include the submodules:
 ```bash
-git clone --recurse-submodules https://github.com/arkanista/kvision.git
+git clone --recurse-submodules https://github.com/arkanista/kvision.git klens
 ```
 
-### Pre-compiled Packages (`v2.7.8` & Automated Rolling Builds)
+### Existing Pre-compiled Packages (`v2.7.8` & Automated Rolling Builds)
+
+This rebrand starts the KLens release series at **1.0.0**. The downloads below are older KVision artifacts (v2.7.8); new builds from this source are branded KLens.
 
 Pre-built packages for **Windows x64**, **Arch Linux / CachyOS**, **Debian / Ubuntu / Linux Mint**, and **Universal Linux (`AppImage`)** are available from the [v2.7.8 release](https://github.com/Arkanista/KVision/releases/tag/v2.7.8). The latest automated builds from `master` are also published under [`linux-latest`](https://github.com/Arkanista/KVision/releases/tag/linux-latest) and [`windows-latest`](https://github.com/Arkanista/KVision/releases/tag/windows-latest).
 
@@ -243,7 +245,7 @@ The easiest and recommended way to build and install the application from source
 
 1. Navigate to the Arch packaging directory:
    ```bash
-   cd kvision/packaging/arch
+   cd klens/packaging/arch
    ```
 2. Build the package (the `-s` flag will automatically download and install all missing dependencies via `pacman`, and `-i` will install the built package):
    ```bash
@@ -252,7 +254,7 @@ The easiest and recommended way to build and install the application from source
 
 ### Building on Ubuntu / Debian (and other derivatives)
 
-KVision is fully compatible with Ubuntu, Debian, and other derivatives. The build system dynamically configures the shared library search paths (RPATH) based on your system's library directory layout (e.g., `/usr/lib/x86_64-linux-gnu` under Ubuntu's multi-arch layout vs `/usr/lib` on Arch Linux).
+KLens is fully compatible with Ubuntu, Debian, and other derivatives. The build system dynamically configures the shared library search paths (RPATH) based on your system's library directory layout (e.g., `/usr/lib/x86_64-linux-gnu` under Ubuntu's multi-arch layout vs `/usr/lib` on Arch Linux).
 
 > [!NOTE]
 > Starting from version 2.2.7, you **do not** need to manually configure `/etc/ld.so.conf.d/` or run `ldconfig` to fix missing `libhcnetsdk.so` errors. The build system automatically sets the correct RPATH, resolving library paths seamlessly!
@@ -260,10 +262,10 @@ KVision is fully compatible with Ubuntu, Debian, and other derivatives. The buil
 Here is the step-by-step installation guide:
 
 #### Option A: Quick Automated Installer (Recommended)
-You can build and install KVision with all dependencies in a single step using the provided setup script:
+You can build and install KLens with all dependencies in a single step using the provided setup script:
 ```bash
-git clone --recurse-submodules https://github.com/Arkanista/KVision.git
-cd KVision
+git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
+cd klens
 ./tools/install_ubuntu.sh
 ```
 
@@ -288,8 +290,8 @@ cd KVision
 
 2. **Clone the repository with submodules:**
    ```bash
-   git clone --recurse-submodules https://github.com/Arkanista/KVision.git
-   cd KVision
+   git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
+   cd klens
    ```
 
 3. **Configure and build the application:**
@@ -303,9 +305,9 @@ cd KVision
    sudo cmake --install build
    ```
 
-5. **Run KVision:**
+5. **Run KLens:**
    ```bash
-   kvision
+   klens
    ```
 
 ### 🌐 Remote Recorders (WAN / NAT / Internet) & Port Forwarding Guide
@@ -313,9 +315,9 @@ cd KVision
 If you are migrating from **Hikvision iVMS-4200**, note a critical architectural difference when connecting to remote sites behind a router/NAT:
 
 * **iVMS-4200** tunnels almost everything (login, Live View, and playback) over a single proprietary **SDK port (`8000`)**.
-* **KVision** uses SDK traffic for login/control and, by default, direct RTSP for live video. You can instead enable **"Use SDK instead of RTSP"** on a recorder to receive its live preview through HCNetSDK.
+* **KLens** uses SDK traffic for login/control and, by default, direct RTSP for live video. You can instead enable **"Use SDK instead of RTSP"** on a recorder to receive its live preview through HCNetSDK.
 
-| Port | Default | Purpose in KVision | Required for Remote Live View? |
+| Port | Default | Purpose in KLens | Required for Remote Live View? |
 | :--- | :---: | :--- | :---: |
 | **SDK** | `8000` | Authentication, NVR status, fallback channel discovery, archive timeline fallback, archive playback & downloads; live preview when SDK mode is selected | **Required** |
 | **RTSP** | `554` | Default live-view streaming (via FFmpeg / `QmlAV`) | Required unless SDK media is selected |
@@ -324,12 +326,12 @@ If you are migrating from **Hikvision iVMS-4200**, note a critical architectural
 #### Checklist for Remote NVR / DVR Sites
 1. **Verify Port Reachability:** Open **NVR Settings** (gear icon), enter your remote IP/domain and ports, and click **"Test Ports"**.
    * The **SDK** port (default `8000`) must show **Open**. **RTSP** (default `554`) must also show **Open** when using the default live-view mode.
-   * If RTSP is unreachable, enable **"Use SDK instead of RTSP"** in the recorder's settings. KVision will request a TCP live preview through HCNetSDK and use the SDK decoder instead of opening an RTSP connection. Thumbnail capture and live-view traffic also use the SDK path in this mode.
+   * If RTSP is unreachable, enable **"Use SDK instead of RTSP"** in the recorder's settings. KLens will request a TCP live preview through HCNetSDK and use the SDK decoder instead of opening an RTSP connection. Thumbnail capture and live-view traffic also use the SDK path in this mode.
    * SDK preview port behavior can vary by recorder model/firmware. Verify the selected mode through the same NAT/firewall path; do not assume SDK port forwarding alone is sufficient for every device.
    * When using RTSP with an external mapping (e.g., external `10554` → internal `554`), enter `10554` in the recorder's **RTSP Port** field.
 2. **Enable "Remote recorder (WAN / NAT)":**
    * Check **"Remote recorder (WAN / NAT)"** in the recorder's settings panel.
-   * For RTSP live view, KVision enforces TCP transport, uses larger WAN-safe FFmpeg probe buffers and timeouts, streams Sub-Stream in multi-camera grids, staggers startup, and uses exponential reconnect backoff. SDK media mode uses the SDK's TCP preview path instead.
+   * For RTSP live view, KLens enforces TCP transport, uses larger WAN-safe FFmpeg probe buffers and timeouts, streams Sub-Stream in multi-camera grids, staggers startup, and uses exponential reconnect backoff. SDK media mode uses the SDK's TCP preview path instead.
 3. **Avoid Port Scanning Lockouts (*Illegal Login Lock*):**
    * Hikvision firmware locks accounts for ~30 minutes after several consecutive failed logins (`HTTP 401`). Double-check your username and password before clicking **Discover Cameras**.
 
@@ -338,7 +340,7 @@ If you are migrating from **Hikvision iVMS-4200**, note a critical architectural
 ### 🔧 Troubleshooting: Video Streams & Ubuntu / Debian Setup
 
 #### Cameras are discovered, but Live View shows a black screen or exclamation mark
-If KVision connects to your NVR, retrieves the camera names, but the video feeds fail to play:
+If KLens connects to your NVR, retrieves the camera names, but the video feeds fail to play:
 
 1. **Missing QtMultimedia runtime plugins (Ubuntu/Debian):**
    Make sure runtime multimedia plugins are installed (these are separate from development headers):
@@ -350,25 +352,25 @@ If KVision connects to your NVR, retrieves the camera names, but the video feeds
 
 2. **RTSP Transport Protocol (UDP vs TCP):**
    By default, RTSP stream negotiation may attempt UDP. Most network firewalls, routers with port forwarding (NAT), and many Hikvision units drop UDP packets.
-   * In KVision, open **NVR Settings** (gear icon) and edit your recorder.
+   * In KLens, open **NVR Settings** (gear icon) and edit your recorder.
    * Set **RTSP Transport** to **`TCP`** (instead of Auto or UDP).
 
 3. **Ensure full installation (`sudo cmake --install build`):**
-   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/kvision`), which is required for playback and archive features to locate auxiliary renderers.
+   Do not run the binary directly from the `build/` folder without installation. Running `sudo cmake --install build` installs the Hikvision SDK binary components into the system multi-arch path (`/usr/lib/x86_64-linux-gnu/klens`), which is required for playback and archive features to locate auxiliary renderers.
 
-4. **Verify RTSP stream outside KVision:**
+4. **Verify RTSP stream outside KLens:**
    You can verify whether your camera's RTSP feed is reachable on your system by running:
    ```bash
    ffplay -rtsp_transport tcp "rtsp://USER:PASSWORD@IP:PORT/Streaming/Channels/101"
    ```
-   If `ffplay` streams video properly with `-rtsp_transport tcp`, but KVision displays a black screen, verify that `libqt5multimedia5-plugins` is installed.
+   If `ffplay` streams video properly with `-rtsp_transport tcp`, but KLens displays a black screen, verify that `libqt5multimedia5-plugins` is installed.
 
 5. **Isolate Network/Router vs Local Issues using the Mock NVR Server:**
    You can run a local simulated Hikvision NVR to test streaming and custom ports in a completely isolated environment (no external network, router, or physical NVR needed):
    ```bash
    python3 tools/mock_hikvision_server.py --http-port 17080 --rtsp-port 17554
    ```
-   Then in KVision, add a new NVR with:
+   Then in KLens, add a new NVR with:
    * **IP:** `127.0.0.1`
    * **HTTP Port:** `17080`
    * **RTSP Port:** `17554`
@@ -376,7 +378,7 @@ If KVision connects to your NVR, retrieves the camera names, but the video feeds
    * **Password:** `12345`
    * **RTSP Transport:** `TCP`
    
-   Click **"Discover Cameras"** and add. If video plays with the mock server, KVision and custom port handling are functioning properly on your system, and any streaming failure with your real NVR is due to network/NAT/firewall routing or physical device configuration.
+   Click **"Discover Cameras"** and add. If video plays with the mock server, KLens and custom port handling are functioning properly on your system, and any streaming failure with your real NVR is due to network/NAT/firewall routing or physical device configuration.
 
 ### Manual Build using CMake (Any Linux distribution)
 
@@ -390,7 +392,7 @@ If you are not using Arch Linux or Ubuntu, you can build the application manuall
    *(Note: `qt5-wayland` or `qtwayland5` is highly recommended for native Wayland support).*
 2. **Configure the build directory:**
    ```bash
-   cd kvision
+   cd klens
    cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
    ```
 3. **Compile the project:**
@@ -404,8 +406,8 @@ If you are not using Arch Linux or Ubuntu, you can build the application manuall
 
 ### Building on Windows (x64)
 
-KVision supports native 64-bit Windows builds using **MSVC 2022**, **Qt 5.15.2**, **FFmpeg**, and the **Hikvision Windows SDK (`EN-HCNetSDK`)**:
-- **Automated CI Build:** Use the included GitHub Actions workflow (`.github/workflows/build-windows.yml`) to automatically compile KVision and produce a portable `KVision-Windows-x64.zip` bundle with all required DLLs.
+KLens supports native 64-bit Windows builds using **MSVC 2022**, **Qt 5.15.2**, **FFmpeg**, and the **Hikvision Windows SDK (`EN-HCNetSDK`)**:
+- **Automated CI Build:** Use the included GitHub Actions workflow (`.github/workflows/build-windows.yml`) to automatically compile KLens and produce a portable `KLens-Windows-x64.zip` bundle with all required DLLs.
 - **Local Build & Configuration Guide:** See [BUILD_WINDOWS.md](BUILD_WINDOWS.md) for complete step-by-step instructions on building locally with CMake/Ninja/MSVC, deploying with `windeployqt`, locating `%APPDATA%\KVision\KVision.ini`, and migrating settings between Linux and Windows.
 
 For detailed usage instructions, check out the documentation files:
@@ -417,11 +419,11 @@ For detailed usage instructions, check out the documentation files:
 
 ## 🖥️ Desktop Scaling on KDE Plasma
 
-Starting from version 2.4.4, KVision automatically detects and correctly applies fractional desktop scaling (e.g., 125%, 145%, 150%) configured in KDE Plasma settings by enforcing native High DPI pass-through policies in Qt. The user interface should now scale correctly out-of-the-box without any manual intervention.
+Starting from version 2.4.4, KLens automatically detects and correctly applies fractional desktop scaling (e.g., 125%, 145%, 150%) configured in KDE Plasma settings by enforcing native High DPI pass-through policies in Qt. The user interface should now scale correctly out-of-the-box without any manual intervention.
 
 ### Native Wayland Support
 
-To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KVision to run natively on Wayland instead of falling back to XWayland.
+To ensure the best scaling experience and performance under Wayland, make sure you have the optional `qt5-wayland` package installed on your system. This allows KLens to run natively on Wayland instead of falling back to XWayland.
 
 For Arch Linux / Manjaro / CachyOS:
 ```bash
@@ -439,10 +441,10 @@ If you are running an older version, an unusual configuration, or simply wish to
 
 For example, to force **150%** scaling, launch the application from the terminal with:
 ```bash
-env QT_FONT_DPI=96 QT_SCALE_FACTOR=1.5 kvision
+env QT_FONT_DPI=96 QT_SCALE_FACTOR=1.5 klens
 ```
 
-*(You can permanently apply this by editing the application launcher `kvision.desktop` in the KDE menu editor and adding these variables to the "Environment variables" field).*
+*(You can permanently apply this by editing the application launcher `klens.desktop` in the KDE menu editor and adding these variables to the "Environment variables" field).*
 
 ---
 

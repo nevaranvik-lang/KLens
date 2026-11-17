@@ -1,17 +1,17 @@
-# Building KVision on Windows (x64)
+# Building KLens on Windows (x64)
 
-This guide explains how to build and package **KVision** on 64-bit Windows using **MSVC 2022**, **Qt 5.15.2**, **FFmpeg**, and the **Hikvision Windows SDK (`EN-HCNetSDK`)**, either automatically via GitHub Actions or locally on a Windows machine.
+This guide explains how to build and package **KLens** on 64-bit Windows using **MSVC 2022**, **Qt 5.15.2**, **FFmpeg**, and the **Hikvision Windows SDK (`EN-HCNetSDK`)**, either automatically via GitHub Actions or locally on a Windows machine.
 
 ---
 
 ## Option 1: Automated Build via GitHub Actions (Recommended)
 
-The repository includes an automated CI workflow (`.github/workflows/build-windows.yml`) that compiles KVision and bundles all required runtime DLLs (Qt5, FFmpeg, OpenSSL, Hikvision SDK, and `HCNetSDKCom` plugins) into a portable `KVision-Windows-x64.zip` archive.
+The repository includes an automated CI workflow (`.github/workflows/build-windows.yml`) that compiles KLens and bundles all required runtime DLLs (Qt5, FFmpeg, OpenSSL, Hikvision SDK, and `HCNetSDKCom` plugins) into a portable `KLens-Windows-x64.zip` archive.
 
 1. Go to the **Actions** tab in your GitHub repository.
 2. Select **Build Windows x64** from the left sidebar.
 3. Click **Run workflow** (or push to `master` / `main`).
-4. Once the build completes, download the **`KVision-Windows-x64`** artifact, extract it anywhere on Windows, and run `kvision.exe`.
+4. Once the build completes, download the **`KLens-Windows-x64`** artifact, extract it anywhere on Windows, and run `klens.exe`.
 
 ---
 
@@ -32,7 +32,7 @@ The repository includes an automated CI workflow (`.github/workflows/build-windo
    - Extract it (e.g. to `C:\ffmpeg`) so that `C:\ffmpeg\include`, `C:\ffmpeg\lib`, and `C:\ffmpeg\bin` exist.
 5. **Hikvision Windows x64 SDK (`EN-HCNetSDKV6.1.9.48_build20230410_win64`)**:
    - Copy the Windows `.lib` files (`HCNetSDK.lib`, `PlayCtrl.lib`, `HCCore.lib`, `GdiPlus.lib`) into `src/hikvision_sdk/lib/win64/`.
-   - Keep the runtime `.dll` files (`HCNetSDK.dll`, `PlayCtrl.dll`, `HCCore.dll`, `SuperRender.dll`, `AudioRender.dll`, `HCNetSDKCom\`, etc.) ready to deploy next to `kvision.exe`.
+   - Keep the runtime `.dll` files (`HCNetSDK.dll`, `PlayCtrl.dll`, `HCCore.dll`, `SuperRender.dll`, `AudioRender.dll`, `HCNetSDKCom\`, etc.) ready to deploy next to `klens.exe`.
 
 ---
 
@@ -55,27 +55,27 @@ cmake --build build --config Release
 
 ### 3. Deploying Runtime Libraries (`windeployqt`)
 
-To create a standalone portable folder (e.g., `dist\KVision`):
+To create a standalone portable folder (e.g., `dist\KLens`):
 
-1. Copy `build\kvision.exe` and `build\ffmpeg.exe` (or `C:\ffmpeg\bin\ffmpeg.exe`) into `dist\KVision\`.
+1. Copy `build\klens.exe` and `build\ffmpeg.exe` (or `C:\ffmpeg\bin\ffmpeg.exe`) into `dist\KLens\`.
 2. Run `windeployqt` to bundle Qt5 DLLs and QML modules:
    ```cmd
-   C:\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe --release --qmldir src dist\KVision\kvision.exe
+   C:\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe --release --qmldir src dist\KLens\klens.exe
    ```
-3. Copy all FFmpeg `.dll` files from `C:\ffmpeg\bin\*.dll` into `dist\KVision\`.
-4. Copy all Hikvision Windows SDK `.dll` files (`HCNetSDK.dll`, `HCCore.dll`, `PlayCtrl.dll`, `SuperRender.dll`, `AudioRender.dll`, `hlog.dll`, `hpr.dll`, `libcrypto-1_1-x64.dll`, `libssl-1_1-x64.dll`, `zlib1.dll`, and the `HCNetSDKCom` subfolder) into `dist\KVision\`.
+3. Copy all FFmpeg `.dll` files from `C:\ffmpeg\bin\*.dll` into `dist\KLens\`.
+4. Copy all Hikvision Windows SDK `.dll` files (`HCNetSDK.dll`, `HCCore.dll`, `PlayCtrl.dll`, `SuperRender.dll`, `AudioRender.dll`, `hlog.dll`, `hpr.dll`, `libcrypto-1_1-x64.dll`, `libssl-1_1-x64.dll`, `zlib1.dll`, and the `HCNetSDKCom` subfolder) into `dist\KLens\`.
 
 ---
 
 ## Configuration File Location & Cross-Platform Import / Export (Linux ↔ Windows)
 
-On both Linux and Windows, KVision stores its configuration in standard **INI format** (`QSettings::IniFormat`):
+On both Linux and Windows, KLens stores its configuration in standard **INI format** (`QSettings::IniFormat`):
 
 - **Windows:** `%APPDATA%\KVision\KVision.ini` (i.e., `C:\Users\<Username>\AppData\Roaming\KVision\KVision.ini`)
 - **Linux:** `~/.config/KVision/KVision.conf`
 
 ### Built-in Import / Export Tab
-You can transfer your entire setup (recorders, custom camera names, grid layouts, and preferences) between Linux and Windows directly from the KVision interface:
+You can transfer your entire setup (recorders, custom camera names, grid layouts, and preferences) between Linux and Windows directly from the KLens interface:
 1. Open the side panel (**Menu**).
 2. Select the **Import / Export** tab (located between **Settings** and **Changelog**).
 3. Click **Export settings to file...** on the source system or **Import settings from file...** on the target system.

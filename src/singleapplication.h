@@ -21,9 +21,9 @@ public:
     explicit SingleApplication(QObject *parent = nullptr)
         : QObject(parent),
 #ifdef Q_OS_UNIX
-          m_socketName(QFileInfo(QCoreApplication::applicationFilePath()).fileName() + "-kvision-socket-" + QString::number(getuid()))
+          m_socketName(QFileInfo(QCoreApplication::applicationFilePath()).fileName() + "-klens-socket-" + QString::number(getuid()))
 #else
-          m_socketName(QFileInfo(QCoreApplication::applicationFilePath()).fileName() + "-kvision-socket")
+          m_socketName(QFileInfo(QCoreApplication::applicationFilePath()).fileName() + "-klens-socket")
 #endif
     {
         // Read configuration to check if single application mode is enabled

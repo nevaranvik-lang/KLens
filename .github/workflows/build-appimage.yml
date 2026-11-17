@@ -10,8 +10,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.desktop"
+      - "klens.qrc"
+      - "klens.desktop"
       - "tools/build_appimage.sh"
       - ".github/workflows/build-appimage.yml"
   pull_request:
@@ -20,8 +20,8 @@ on:
       - "images/**"
       - "translations/**"
       - "CMakeLists.txt"
-      - "kvision.qrc"
-      - "kvision.desktop"
+      - "klens.qrc"
+      - "klens.desktop"
       - "tools/build_appimage.sh"
       - ".github/workflows/build-appimage.yml"
 
@@ -46,7 +46,7 @@ jobs:
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kvision-appimage-x86_64
+          name: klens-appimage-x86_64
           path: dist/*.AppImage
 
   publish-appimage:
@@ -61,7 +61,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-assets
-          pattern: kvision-appimage-*
+          pattern: klens-appimage-*
           merge-multiple: true
 
       - name: Publish to rolling linux-latest pre-release

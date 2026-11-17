@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Update KVision LNG_XXXXX keys in the English and Bulgarian Qt .ts files.
+Update KLens LNG_XXXXX keys in the English and Bulgarian Qt .ts files.
 
 Usage examples:
   python3 tools/translate_ts.py --id LNG_00587 --en "English text" --bg "Bulgarian text" --compile
@@ -94,7 +94,7 @@ def upsert_messages(ts_path: Path, entries: dict[str, str]) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Update KVision English and Bulgarian .ts files")
+    parser = argparse.ArgumentParser(description="Update KLens English and Bulgarian .ts files")
     parser.add_argument("--id", help="Single key ID (e.g. LNG_00587)")
     parser.add_argument("--en", help="English text for --id")
     parser.add_argument("--bg", help="Bulgarian text for --id (optional; uses Google Translate if omitted)")

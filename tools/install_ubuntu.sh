@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# KVision - Automated Build and Installation Script for Ubuntu / Debian
+# KLens - Automated Build and Installation Script for Ubuntu / Debian
 # ==============================================================================
 set -euo pipefail
 
 echo "======================================================================"
-echo "          KVision - Installer for Ubuntu / Debian Derivatives         "
+echo "           KLens - Installer for Ubuntu / Debian Derivatives          "
 echo "======================================================================"
 
 # Check if running in a Git repository
 if [ ! -f "CMakeLists.txt" ] || [ ! -d "src" ]; then
-    echo "[-] Error: Please run this script from the root of the KVision repository."
+    echo "[-] Error: Please run this script from the root of the KLens repository."
     exit 1
 fi
 
@@ -72,25 +72,25 @@ cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=/usr
 
 # 6. Build the application
-echo "[*] Compiling KVision..."
+echo "[*] Compiling KLens..."
 cmake --build build -j"$(nproc)"
 
 # 7. Install the application and SDK libraries into the system
-echo "[*] Installing KVision and Hikvision SDK to /usr..."
+echo "[*] Installing KLens and Hikvision SDK to /usr..."
 sudo cmake --install build
 sudo ldconfig
 
 echo ""
 echo "======================================================================"
-echo "[+] KVision has been successfully built and installed!"
+echo "[+] KLens has been successfully built and installed!"
 echo "======================================================================"
 echo ""
-echo "To launch KVision, run:"
-echo "    kvision"
+echo "To launch KLens, run:"
+echo "    klens"
 echo ""
 echo "[i] Important Tips for Remote / NAT Recorders:"
 echo "    - Unlike iVMS-4200 (which tunnels live video over SDK port 8000),"
-echo "      KVision streams Live View via RTSP (default port 554)."
+echo "      KLens streams Live View via RTSP (default port 554)."
 echo "    - For remote recorders behind NAT, forward both SDK (8000) and RTSP (554),"
 echo "      use the 'Test Ports' button in NVR Settings, and enable"
 echo "      'Remote recorder (WAN / NAT)' (which enforces TCP and WAN timeouts)."

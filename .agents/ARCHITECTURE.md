@@ -1,6 +1,6 @@
-# KVision Architecture & Technical Specification
+# KLens Architecture & Technical Specification
 
-KVision is a multi-monitor, high-performance Video Management System (VMS) client designed for Linux, built with **Qt 5.15+ (Quick/QML)**, **C++17**, **FFmpeg**, and **Hikvision HCNetSDK / ISAPI**.
+KLens is a multi-monitor, high-performance Video Management System (VMS) client designed for Linux, built with **Qt 5.15+ (Quick/QML)**, **C++17**, **FFmpeg**, and **Hikvision HCNetSDK / ISAPI**.
 
 ---
 
@@ -43,7 +43,7 @@ KVision is a multi-monitor, high-performance Video Management System (VMS) clien
 
 ## 2. Multi-Process Architecture & IPC
 
-KVision employs a multi-process architecture to support multi-monitor installations with complete window isolation and native Wayland/X11 window manager independence:
+KLens employs a multi-process architecture to support multi-monitor installations with complete window isolation and native Wayland/X11 window manager independence:
 
 ```
                   +----------------------------------------------+
@@ -77,7 +77,7 @@ KVision employs a multi-process architecture to support multi-monitor installati
 
 ### Process Roles:
 1. **Primary Instance**:
-   * Initializes [`SingleApplication`](file:///home/robert/cctv/kvision/src/singleapplication.h), binding to a Unix domain socket `kvision-kvision-socket-<UID>`.
+   * Initializes [`SingleApplication`](../src/singleapplication.h), binding to a Unix domain socket `klens-klens-socket-<UID>`.
    * Hosts main controls, NVR camera tree (`SideBar.qml`), and primary video viewport matrix.
    * On shutdown or crash, cleans stale socket descriptors.
 2. **Auxiliary Windows (`--auxiliary <id>`)**:
@@ -86,7 +86,7 @@ KVision employs a multi-process architecture to support multi-monitor installati
    * Spawns independent QML engine and OpenGL context, allowing dedicated GPU scheduling across separate physical displays.
    * Monitored via `/proc` in `main.cpp::countAuxiliaryProcesses()` against `auxiliaryLimit` (max 3).
 3. **Cross-Process Hot-Reloading**:
-   * Both primary and auxiliary processes register `~/.config/KVision/KVision.conf` with [`QFileSystemWatcher`](file:///home/robert/cctv/kvision/src/context.cpp#L25).
+   * Both primary and auxiliary processes register `~/.config/KVision/KVision.conf` with [`QFileSystemWatcher`](../src/context.cpp).
    * File writes trigger debounced signal `Context::configFileChanged()`. All active processes reload models and camera matrices dynamically without dropped frames.
 
 ---
@@ -143,7 +143,7 @@ The `QmlAV` engine is a dedicated multithreaded audio/video pipeline built on to
 
 ### 3.2. Hikvision HCNetSDK & ISAPI Subsystem
 
-For native Hikvision archive search, playback, PTZ, and diagnostic telemetry, KVision integrates directly with the Hikvision C SDK (`libhcnetsdk.so`) and HTTP ISAPI:
+For native Hikvision archive search, playback, PTZ, and diagnostic telemetry, KLens integrates directly with the Hikvision C SDK (`libhcnetsdk.so`) and HTTP ISAPI:
 
 ```
 +-------------------------------------------------------------------------------+

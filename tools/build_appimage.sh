@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# KVision - Portable x86_64 AppImage Builder (recommended base: Ubuntu 22.04)
+# KLens - Portable x86_64 AppImage Builder (recommended base: Ubuntu 22.04)
 # ==============================================================================
 set -euo pipefail
 
 if [ ! -f "CMakeLists.txt" ] || [ ! -d "src" ]; then
-    echo "[-] Error: Run this script from the root of the KVision repository."
+    echo "[-] Error: Run this script from the root of the KLens repository."
     exit 1
 fi
 
@@ -66,12 +66,12 @@ TOOLS_DIR="$(pwd)/appimage-tools"
 rm -rf "$BUILD_DIR" "$APPDIR"
 mkdir -p "$TOOLS_DIR" dist
 
-echo "[*] Configuring and building KVision ${APP_VERSION}..."
+echo "[*] Configuring and building KLens ${APP_VERSION}..."
 cmake -B "$BUILD_DIR" -S . -DCMAKE_BUILD_TYPE=Release -DPACKAGER=APPIMAGE
 cmake --build "$BUILD_DIR" -j"$(nproc)"
 DESTDIR="$APPDIR" cmake --install "$BUILD_DIR"
 
-# Bundle ffmpeg CLI alongside kvision binary so HikvisionDownloader resolves it locally
+# Bundle ffmpeg CLI alongside the klens binary so HikvisionDownloader resolves it locally
 FFMPEG_BIN="$(command -v ffmpeg || true)"
 if [ -n "$FFMPEG_BIN" ] && [ -f "$FFMPEG_BIN" ]; then
     cp -f "$FFMPEG_BIN" "$APPDIR/usr/bin/ffmpeg"
@@ -110,8 +110,8 @@ if [ -z "${QMAKE:-}" ]; then
     fi
 fi
 
-# Find Hikvision SDK directory inside AppDir (e.g. usr/lib/x86_64-linux-gnu/kvision)
-HIK_SDK_APPDIR="$(find "$APPDIR/usr" -type d -name kvision -print -quit || true)"
+# Find Hikvision SDK directory inside AppDir (e.g. usr/lib/x86_64-linux-gnu/klens)
+HIK_SDK_APPDIR="$(find "$APPDIR/usr" -type d -name klens -print -quit || true)"
 if [ -n "$HIK_SDK_APPDIR" ]; then
     # Mirror SDK libs & HCNetSDKCom into usr/lib so bundled RPATH '$ORIGIN/../lib' works directly
     cp -a "$HIK_SDK_APPDIR/"* "$APPDIR/usr/lib/" 2>/dev/null || true
@@ -145,10 +145,10 @@ fi
 
 export QML_SOURCES_PATHS="$(pwd)/src"
 export VERSION="$APP_VERSION"
-export OUTPUT="KVision-${APP_VERSION}-${ARCH}.AppImage"
+export OUTPUT="KLens-${APP_VERSION}-${ARCH}.AppImage"
 
-DESKTOP_FILE="$APPDIR/usr/share/applications/kvision.desktop"
-ICON_FILE="$APPDIR/usr/share/icons/hicolor/256x256/apps/kvision.png"
+DESKTOP_FILE="$APPDIR/usr/share/applications/klens.desktop"
+ICON_FILE="$APPDIR/usr/share/icons/hicolor/256x256/apps/klens.png"
 
 EXTRA_EXEC_ARGS=()
 if [ -x "$APPDIR/usr/bin/ffmpeg" ]; then
@@ -159,7 +159,7 @@ echo "[*] Bundling Qt5, QML modules, FFmpeg, and Hikvision SDK into AppImage..."
 BUILT_APPIMAGE="$OUTPUT"
 "$LINUXDEPLOY" \
     --appdir "$APPDIR" \
-    -e "$APPDIR/usr/bin/kvision" \
+    -e "$APPDIR/usr/bin/klens" \
     "${EXTRA_EXEC_ARGS[@]}" \
     -d "$DESKTOP_FILE" \
     -i "$ICON_FILE" \

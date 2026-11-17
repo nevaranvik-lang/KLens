@@ -5,7 +5,7 @@
         <message>
             <location filename="../src/AuxiliaryLimitWarning.qml" line="16" />
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <location filename="../src/AuxiliaryLimitWarning.qml" line="64" />
@@ -23,7 +23,7 @@
         <message>
             <location filename="../src/AuxiliaryWindow.qml" line="14" />
             <source>LNG_00018</source>
-            <translation>KVision - Auxiliary Window</translation>
+            <translation>KLens - Auxiliary Window</translation>
         </message>
         <message>
             <location filename="../src/AuxiliaryWindow.qml" line="141" />
@@ -162,7 +162,7 @@
         <message>
             <location filename="../src/context.cpp" line="182" />
             <source>LNG_00476</source>
-            <translation>KVision - viewer and mounter video streams.</translation>
+            <translation>KLens - NVR and IP camera viewer.</translation>
         </message>
     </context>
     <context>
@@ -457,7 +457,7 @@
         <message>
             <location filename="../src/InstructionsWindow.qml" line="9" />
             <source>LNG_00057</source>
-            <translation>KVision - User Manual / Instructions</translation>
+            <translation>KLens - User Manual / Instructions</translation>
         </message>
         <message>
             <location filename="../src/InstructionsWindow.qml" line="36" />
@@ -1411,12 +1411,12 @@
         <message>
             <location filename="../src/RootWindow.qml" line="18" />
             <source>LNG_00018</source>
-            <translation>KVision - Auxiliary Window</translation>
+            <translation>KLens - Auxiliary Window</translation>
         </message>
         <message>
             <location filename="../src/RootWindow.qml" line="18" />
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <location filename="../src/RootWindow.qml" line="489" />
@@ -1512,7 +1512,7 @@
         <message>
             <location filename="../src/RootWindow.qml" line="1569" />
             <source>LNG_00210</source>
-            <translation>KVision - Panel</translation>
+            <translation>KLens - Panel</translation>
         </message>
         <message>
             <location filename="../src/RootWindow.qml" line="1703" />
@@ -2490,7 +2490,7 @@
         <message>
             <location filename="../src/SideBar.qml" line="558" />
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <location filename="../src/SideBar.qml" line="569" />
@@ -3026,7 +3026,7 @@
         <message>
             <location filename="../src/SingleInstanceWarning.qml" line="16" />
             <source>LNG_00003</source>
-            <translation>KVision</translation>
+            <translation>KLens</translation>
         </message>
         <message>
             <location filename="../src/SingleInstanceWarning.qml" line="64" />

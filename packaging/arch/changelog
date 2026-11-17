@@ -1,4 +1,5 @@
-2.7.8-1
+1.0.0-1
+  * Rebranded the application as KLens and began the 1.0.0 release series.
   * PL: Ulepszono responsywny układ pasków narzędzi w oknach głównym i pomocniczym: przyciski pozostają zgrupowane, a presety widoków przechodzą do kolejnych wierszy przy wąskim oknie; pasek archiwum dopasowuje się do szerokości okna. Górne paski są domyślnie automatycznie ukrywane, przycisk pinezki trwale zapisuje ustawienie widoczności, a obszar wysuwania przy górnej krawędzi ma 25 px.
     EN: Refined the responsive main and auxiliary toolbar layout: controls stay grouped and view presets wrap onto extra rows at narrow widths; the archive toolbar fits the window. Top bars auto-hide by default, the pin preference persists, and the top-edge reveal area is 25 px high.
 

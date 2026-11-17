@@ -197,7 +197,7 @@ static QByteArray fetchIsapiSingleScheme(const QString &scheme,
     qDebug() << "[Hikvision ISAPI] Querying:" << url.toString();
 
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("KVision/2.7"));
+    req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("KLens/2.7"));
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
     QEventLoop loop;
