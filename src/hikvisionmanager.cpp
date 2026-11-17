@@ -16,6 +16,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QUrl>
+#include <QVector>
 #ifndef QT_NO_SSL
 #include <QSslError>
 #endif
@@ -23,6 +24,23 @@
 #include <cstring>
 
 HikvisionManager* HikvisionManager::m_instance = nullptr;
+
+namespace {
+    // Hikvision SDK error codes relevant to login throttling.
+    constexpr DWORD kSdkErrWrongUserOrPassword = 1;  // NET_DVR_PASSWORD_FORMAT_ERROR / wrong user or password
+    constexpr DWORD kSdkErrUserNotExisted = 47;      // NET_DVR_USERNOTEXIST
+    constexpr DWORD kSdkErrUsernameNotExist = 152;   // NET_DVR_USERNAME_NOT_EXIST
+    constexpr DWORD kSdkErrUserLocked = 153;         // NET_DVR_USER_LOCKED ("Illegal Login Lock")
+
+    // Hikvision devices lock an account after 5 consecutive failed logins
+    // ("Illegal Login Lock", ~30 minutes). Throttle our own retry attempts so
+    // automated churn (live players, thumbnails, status polling, ISAPI
+    // fallback) can never trigger or prolong that lock.
+    constexpr qint64 kInvalidCredentialsCooldownMs = 5 * 60 * 1000;  // wrong password / unknown user
+    constexpr qint64 kAccountLockedCooldownMs = 30 * 60 * 1000;      // matches the device lock duration
+    constexpr qint64 kGenericFailureCooldownMs = 15 * 1000;          // first transient failure
+    constexpr qint64 kGenericFailureCooldownMaxMs = 2 * 60 * 1000;
+}
 
 HikvisionManager::HikvisionManager(QObject *parent)
     : QObject(parent)
@@ -504,20 +522,16 @@ QVariantList HikvisionManager::discoverCameras(const QString &ip,
     // Logout from previous session on same IP if any
     logout(cleanIp);
 
-    NET_DVR_USER_LOGIN_INFO loginInfo;
-    std::memset(&loginInfo, 0, sizeof(NET_DVR_USER_LOGIN_INFO));
-
-    std::strncpy(loginInfo.sDeviceAddress, cleanIp.toUtf8().constData(), sizeof(loginInfo.sDeviceAddress) - 1);
-    loginInfo.wPort = static_cast<WORD>(port);
-    std::strncpy(loginInfo.sUserName, username.toUtf8().constData(), sizeof(loginInfo.sUserName) - 1);
-    std::strncpy(loginInfo.sPassword, password.toUtf8().constData(), sizeof(loginInfo.sPassword) - 1);
-    loginInfo.bUseAsynLogin = FALSE;
-    loginInfo.byLoginMode = 0; // Private mode
-
     NET_DVR_DEVICEINFO_V40 deviceInfo;
     std::memset(&deviceInfo, 0, sizeof(NET_DVR_DEVICEINFO_V40));
 
-    LONG lUserID = NET_DVR_Login_V40(&loginInfo, &deviceInfo);
+    // Discovery is an explicit user action (possibly with just-corrected
+    // credentials/ports), so it bypasses the failure cooldown but still runs
+    // serialized against all other login attempts for this device.
+    const auto deviceMutex = loginMutexFor(cleanIp);
+    std::lock_guard<std::mutex> loginLock(*deviceMutex);
+
+    const LONG lUserID = loginToDevice(cleanIp, port, username, password, deviceInfo, /*bypassCooldown=*/true);
     if (lUserID < 0) {
         const DWORD err = NET_DVR_GetLastError();
         qWarning() << "[Hikvision] SDK Login failed for IP:" << cleanIp << "port:" << port << "Error:" << err;
@@ -885,7 +899,7 @@ LONG HikvisionManager::getSession(const QString &ip, int port, const QString &us
 
     bool wasLogged = false;
     bool isLoggedNow = false;
-    LONG staleUserId = -1;
+    QVector<LONG> staleIdsToLogout;
 
     // 1. Check if already logged in on the matching port
     {
@@ -895,41 +909,66 @@ LONG HikvisionManager::getSession(const QString &ip, int port, const QString &us
             if (existing.port == port) {
                 return existing.lUserID;
             }
-            staleUserId = m_sessions.take(cleanIp).lUserID;
-        } else if (m_sharedSessions.contains(cleanIp)) {
-            const auto &existingShared = m_sharedSessions.value(cleanIp);
-            if (existingShared.port == port) {
-                return existingShared.lUserID;
-            }
+            staleIdsToLogout.append(m_sessions.take(cleanIp).lUserID);
+        } else if (m_sharedSessions.contains(cleanIp)
+                   && m_sharedSessions.value(cleanIp).port == port) {
+            // Status/PTZ-only callers can share the ref-counted media session
+            // instead of opening a second session on the device.
+            return m_sharedSessions.value(cleanIp).lUserID;
         }
         wasLogged = isLoggedInternal(cleanIp);
     }
 
-    // 2. Not logged in (or port changed), log in
-    ensureInitialized();
+    // 2. Serialize the login with all other login attempts for this device so
+    //    concurrent players/pollers cannot pile up simultaneous logins on the
+    //    device (which trips its "Illegal Login Lock", error 153).
+    const auto deviceMutex = loginMutexFor(cleanIp);
+    std::lock_guard<std::mutex> loginLock(*deviceMutex);
 
-    if (staleUserId >= 0) {
-        NET_DVR_Logout(staleUserId);
+    // Double-check: a concurrent caller may have just created a session while
+    // we were waiting on the device mutex.
+    LONG reuseAfterWaitId = -1;
+    LONG reuseAfterWaitSharedId = -1;
+    {
+        std::lock_guard<std::mutex> lock(m_sharedSessionsMutex);
+        if (m_sessions.contains(cleanIp)) {
+            const auto &existing = m_sessions.value(cleanIp);
+            if (existing.port == port) {
+                reuseAfterWaitId = existing.lUserID;
+            } else {
+                staleIdsToLogout.append(m_sessions.take(cleanIp).lUserID);
+            }
+        } else if (m_sharedSessions.contains(cleanIp)
+                   && m_sharedSessions.value(cleanIp).port == port) {
+            // Status/PTZ-only callers can share the ref-counted media session
+            // instead of opening a second session on the device.
+            reuseAfterWaitSharedId = m_sharedSessions.value(cleanIp).lUserID;
+        }
     }
+
+    for (LONG staleId : staleIdsToLogout) {
+        ensureInitialized();
+        NET_DVR_Logout(staleId);
+    }
+
+    if (reuseAfterWaitId >= 0) {
+        return reuseAfterWaitId;
+    }
+    if (reuseAfterWaitSharedId >= 0) {
+        return reuseAfterWaitSharedId;
+    }
+
+    ensureInitialized();
 
     if (!m_initialized) {
         qWarning() << "[Hikvision] Cannot get session: SDK not initialized.";
         return -1;
     }
 
-    NET_DVR_USER_LOGIN_INFO loginInfo;
-    std::memset(&loginInfo, 0, sizeof(NET_DVR_USER_LOGIN_INFO));
-    std::strncpy(loginInfo.sDeviceAddress, cleanIp.toUtf8().constData(), sizeof(loginInfo.sDeviceAddress) - 1);
-    loginInfo.wPort = static_cast<WORD>(port);
-    std::strncpy(loginInfo.sUserName, username.toUtf8().constData(), sizeof(loginInfo.sUserName) - 1);
-    std::strncpy(loginInfo.sPassword, password.toUtf8().constData(), sizeof(loginInfo.sPassword) - 1);
-    loginInfo.bUseAsynLogin = FALSE;
-    loginInfo.byLoginMode = 0; // Private mode
-
     NET_DVR_DEVICEINFO_V40 deviceInfo;
     std::memset(&deviceInfo, 0, sizeof(NET_DVR_DEVICEINFO_V40));
 
-    LONG lUserID = NET_DVR_Login_V40(&loginInfo, &deviceInfo);
+    const LONG lUserID = loginToDevice(cleanIp, port, username, password, deviceInfo);
     if (lUserID < 0) {
         DWORD err = NET_DVR_GetLastError();
         qWarning() << "[Hikvision] getSession login FAILED for IP:" << cleanIp << "port:" << port << "Error:" << err;
@@ -1052,6 +1091,153 @@ void HikvisionManager::ptzWorkerLoop()
     }
 }
 
+std::shared_ptr<std::mutex> HikvisionManager::loginMutexFor(const QString &cleanIp)
+{
+    std::lock_guard<std::mutex> lock(m_loginMutexesMutex);
+    const auto it = m_loginMutexes.find(cleanIp);
+    if (it != m_loginMutexes.end()) {
+        return it.value();
+    }
+    auto created = std::make_shared<std::mutex>();
+    m_loginMutexes.insert(cleanIp, created);
+    return created;
+}
+
+void HikvisionManager::recordLoginFailure(const QString &cleanIp, DWORD err)
+{
+    std::lock_guard<std::mutex> lock(m_loginStateMutex);
+    LoginFailureState &state = m_loginFailures[cleanIp];
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    state.lastError = err;
+    state.lastAttemptMs = now;
+    state.consecutiveFailures++;
+
+    qint64 cooldownMs;
+    if (err == kSdkErrUserLocked) {
+        // The device has already locked the account. Touching it earlier only
+        // adds failed attempts; wait out the device's own lock duration.
+        cooldownMs = kAccountLockedCooldownMs;
+    } else if (err == kSdkErrWrongUserOrPassword || err == kSdkErrUserNotExisted
+               || err == kSdkErrUsernameNotExist) {
+        // Wrong credentials will not fix themselves — retry slowly so we stay
+        // far below the device's 5-attempt lock threshold.
+        cooldownMs = kInvalidCredentialsCooldownMs;
+    } else {
+        // Transient failure (network, device busy): short escalating backoff.
+        cooldownMs = kGenericFailureCooldownMs * (1 << std::min(state.consecutiveFailures - 1, 3));
+        cooldownMs = std::min<qint64>(cooldownMs, kGenericFailureCooldownMaxMs);
+    }
+    state.retryNotBeforeMs = now + cooldownMs;
+
+    qWarning() << "[Hikvision] Login throttling active for" << cleanIp
+               << "error:" << err
+               << "consecutiveFailures:" << state.consecutiveFailures
+               << "cooldownMs:" << cooldownMs;
+}
+
+void HikvisionManager::clearLoginFailure(const QString &cleanIp)
+{
+    std::lock_guard<std::mutex> lock(m_loginStateMutex);
+    m_loginFailures.remove(cleanIp);
+}
+
+int HikvisionManager::lastLoginError(const QString &ip) const
+{
+    const QString cleanIp = sanitizeHost(ip);
+    std::lock_guard<std::mutex> lock(m_loginStateMutex);
+    return static_cast<int>(m_loginFailures.value(cleanIp).lastError);
+}
+
+qint64 HikvisionManager::loginCooldownRemainingMs(const QString &ip) const
+{
+    const QString cleanIp = sanitizeHost(ip);
+    std::lock_guard<std::mutex> lock(m_loginStateMutex);
+    const auto it = m_loginFailures.constFind(cleanIp);
+    if (it == m_loginFailures.constEnd()) {
+        return 0;
+    }
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    return std::max<qint64>(0, it->retryNotBeforeMs - now);
+}
+
+LONG HikvisionManager::loginToDevice(const QString &ip, int port, const QString &username, const QString &password,
+                                     NET_DVR_DEVICEINFO_V40 &deviceInfo, bool bypassCooldown)
+{
+    // Caller must hold this device's login mutex, so the device only ever sees
+    // one login attempt at a time. `ip` must already be sanitized.
+    if (!bypassCooldown) {
+        std::lock_guard<std::mutex> lock(m_loginStateMutex);
+        const auto it = m_loginFailures.constFind(ip);
+        if (it != m_loginFailures.constEnd()) {
+            const qint64 now = QDateTime::currentMSecsSinceEpoch();
+            if (now < it->retryNotBeforeMs) {
+                qDebug() << "[Hikvision] Login throttled for" << ip << "port:" << port
+                         << "retrying in" << (it->retryNotBeforeMs - now) << "ms"
+                         << "(last error:" << it->lastError << ")";
+                return -1;
+            }
+        }
+    }
+
+    NET_DVR_USER_LOGIN_INFO loginInfo;
+    std::memset(&loginInfo, 0, sizeof(NET_DVR_USER_LOGIN_INFO));
+    std::strncpy(loginInfo.sDeviceAddress, ip.toUtf8().constData(), sizeof(loginInfo.sDeviceAddress) - 1);
+    loginInfo.wPort = static_cast<WORD>(port);
+    std::strncpy(loginInfo.sUserName, username.toUtf8().constData(), sizeof(loginInfo.sUserName) - 1);
+    std::strncpy(loginInfo.sPassword, password.toUtf8().constData(), sizeof(loginInfo.sPassword) - 1);
+    loginInfo.bUseAsynLogin = FALSE;
+    loginInfo.byLoginMode = 0; // Private mode
+
+    const LONG lUserID = NET_DVR_Login_V40(&loginInfo, &deviceInfo);
+    if (lUserID < 0) {
+        const DWORD err = NET_DVR_GetLastError();
+        qWarning() << "[Hikvision] Login FAILED for IP:" << ip << "port:" << port << "Error:" << err;
+        recordLoginFailure(ip, err);
+        return -1;
+    }
+
+    clearLoginFailure(ip);
+    qDebug() << "[Hikvision] Login SUCCESS for IP:" << ip << "port:" << port << "UserID:" << lUserID;
+    return lUserID;
+}
+
+void HikvisionManager::releaseShared(const QString &ip, LONG userID)
+{
+    if (userID < 0) {
+        return;
+    }
+    const QString cleanIp = sanitizeHost(ip);
+    bool wasLogged = false;
+    bool isLoggedNow = false;
+    LONG lUserIDToLogout = -1;
+
+    {
+        std::lock_guard<std::mutex> lock(m_sharedSessionsMutex);
+        wasLogged = isLoggedInternal(cleanIp);
+        const auto it = m_sharedSessions.find(cleanIp);
+        if (it != m_sharedSessions.end() && it.value().lUserID == userID) {
+            it.value().refCount--;
+            qDebug() << "[Hikvision Shared] Released reference for IP:" << cleanIp
+                     << "UserID:" << userID << "New RefCount:" << it.value().refCount;
+            if (it.value().refCount <= 0) {
+                lUserIDToLogout = it.value().lUserID;
+                m_sharedSessions.erase(it);
+            }
+        }
+        isLoggedNow = isLoggedInternal(cleanIp);
+    }
+
+    if (lUserIDToLogout >= 0) {
+        ensureInitialized();
+        NET_DVR_Logout(lUserIDToLogout);
+        qDebug() << "[Hikvision Shared] Logged out session for IP:" << cleanIp << "UserID:" << lUserIDToLogout;
+    }
+
+    if (wasLogged != isLoggedNow) {
+        emit sessionStatusChanged(cleanIp, isLoggedNow);
+    }
+}
+
 LONG HikvisionManager::loginShared(const QString &ip, int port, const QString &username, const QString &password, NET_DVR_DEVICEINFO_V40 &deviceInfo)
 {
     const QString cleanIp = sanitizeHost(ip);
@@ -1062,11 +1248,10 @@ LONG HikvisionManager::loginShared(const QString &ip, int port, const QString &u
         port = 8000;
     }
 
-    bool wasLogged = false;
-    bool isLoggedNow = false;
-    LONG lUserID = -1;
-    LONG staleSharedId = -1;
+    QVector<LONG> staleIdsToLogout;
 
+    // Fast path: an existing session for this device+port can be shared
+    // without touching the device at all.
     {
         std::lock_guard<std::mutex> lock(m_sharedSessionsMutex);
         if (m_sharedSessions.contains(cleanIp)) {
@@ -1077,55 +1262,100 @@ LONG HikvisionManager::loginShared(const QString &ip, int port, const QString &u
                 qDebug() << "[Hikvision Shared] Reusing session for IP:" << cleanIp << "UserID:" << session.lUserID << "RefCount:" << session.refCount;
                 return session.lUserID;
             }
-            staleSharedId = session.lUserID;
+            staleIdsToLogout.append(session.lUserID);
             m_sharedSessions.remove(cleanIp);
         }
-        wasLogged = isLoggedInternal(cleanIp);
     }
 
-    qDebug() << "[Hikvision Shared] Creating NEW session for IP:" << cleanIp << ":" << port;
+    // Serialize all logins for this device. Without this, the N camera
+    // players / thumbnail fetches / pollers that start together each issued
+    // their own NET_DVR_Login_V40 with the same account simultaneously,
+    // which is exactly what trips the device's "Illegal Login Lock"
+    // (error 153, NET_DVR_USER_LOCKED) on many firmwares.
+    const auto deviceMutex = loginMutexFor(cleanIp);
+    std::lock_guard<std::mutex> loginLock(*deviceMutex);
+
+    // Double-check: a concurrent caller may have just created the session
+    // while we were waiting on the device mutex.
+    LONG reuseAfterWaitId = -1;
+    {
+        std::lock_guard<std::mutex> lock(m_sharedSessionsMutex);
+        if (m_sharedSessions.contains(cleanIp)) {
+            auto &session = m_sharedSessions[cleanIp];
+            if (session.port == port) {
+                session.refCount++;
+                deviceInfo = session.deviceInfo;
+                reuseAfterWaitId = session.lUserID;
+            } else {
+                staleIdsToLogout.append(session.lUserID);
+                m_sharedSessions.remove(cleanIp);
+            }
+        }
+    }
+
+    for (LONG staleId : staleIdsToLogout) {
+        ensureInitialized();
+        NET_DVR_Logout(staleId);
+    }
+
+    if (reuseAfterWaitId >= 0) {
+        qDebug() << "[Hikvision Shared] Reusing session after wait for IP:" << cleanIp
+                 << "UserID:" << reuseAfterWaitId;
+        return reuseAfterWaitId;
+    }
 
     ensureInitialized();
-
-    if (staleSharedId >= 0) {
-        NET_DVR_Logout(staleSharedId);
-    }
 
     if (!m_initialized) {
         qWarning() << "[Hikvision Shared] Cannot login: SDK not initialized.";
         return -1;
     }
 
-    NET_DVR_USER_LOGIN_INFO loginInfo;
-    std::memset(&loginInfo, 0, sizeof(NET_DVR_USER_LOGIN_INFO));
-    std::strncpy(loginInfo.sDeviceAddress, cleanIp.toUtf8().constData(), sizeof(loginInfo.sDeviceAddress) - 1);
-    loginInfo.wPort = static_cast<WORD>(port);
-    std::strncpy(loginInfo.sUserName, username.toUtf8().constData(), sizeof(loginInfo.sUserName) - 1);
-    std::strncpy(loginInfo.sPassword, password.toUtf8().constData(), sizeof(loginInfo.sPassword) - 1);
-    loginInfo.bUseAsynLogin = FALSE;
-    loginInfo.byLoginMode = 0;
-
     NET_DVR_DEVICEINFO_V40 devInfo;
     std::memset(&devInfo, 0, sizeof(NET_DVR_DEVICEINFO_V40));
 
-    lUserID = NET_DVR_Login_V40(&loginInfo, &devInfo);
+    const LONG lUserID = loginToDevice(cleanIp, port, username, password, devInfo);
     if (lUserID < 0) {
         DWORD err = NET_DVR_GetLastError();
         qWarning() << "[Hikvision Shared] Login FAILED for IP:" << cleanIp << "port:" << port << "Error:" << err;
         return -1;
     }
 
+    bool wasLogged = false;
+    bool isLoggedNow = false;
+    LONG reusedUserId = -1;
+    LONG redundantLoginId = -1;
     {
         std::lock_guard<std::mutex> lock(m_sharedSessionsMutex);
-        SharedSession session;
-        session.lUserID = lUserID;
-        session.port = port;
-        session.deviceInfo = devInfo;
-        session.refCount = 1;
+        wasLogged = isLoggedInternal(cleanIp);
+        if (m_sharedSessions.contains(cleanIp) && m_sharedSessions[cleanIp].port == port) {
+            // Defensive: a session for this device appeared while we were
+            // logging in. Share it and discard our redundant login instead of
+            // orphaning a live userID on the device.
+            auto &existing = m_sharedSessions[cleanIp];
+            existing.refCount++;
+            deviceInfo = existing.deviceInfo;
+            reusedUserId = existing.lUserID;
+            redundantLoginId = lUserID;
+            isLoggedNow = true;
+            qDebug() << "[Hikvision Shared] Discarded redundant login for IP:" << cleanIp
+                     << "reusing UserID:" << reusedUserId << "RefCount:" << existing.refCount;
+        } else {
+            SharedSession session;
+            session.lUserID = lUserID;
+            session.port = port;
+            session.deviceInfo = devInfo;
+            session.refCount = 1;
 
-        m_sharedSessions.insert(cleanIp, session);
-        deviceInfo = devInfo;
-        isLoggedNow = isLoggedInternal(cleanIp);
+            m_sharedSessions.insert(cleanIp, session);
+            deviceInfo = devInfo;
+            isLoggedNow = isLoggedInternal(cleanIp);
+        }
+    }
+
+    if (redundantLoginId >= 0) {
+        NET_DVR_Logout(redundantLoginId);
+        return reusedUserId;
     }
 
     qDebug() << "[Hikvision Shared] Login SUCCESS for IP:" << cleanIp << "UserID:" << lUserID;

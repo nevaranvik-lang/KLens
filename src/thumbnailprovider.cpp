@@ -290,7 +290,7 @@ void ThumbnailFetchWorker::fetchSdkFrame(const QVariantMap &recorderInfo, int ch
                                                           static_cast<DWORD>(jpegBuffer.size()),
                                                           &jpegSize);
     const DWORD captureError = captured ? 0 : NET_DVR_GetLastError();
-    manager->logoutShared(ip);
+    manager->releaseShared(ip, userId);
 
     if (!captured || jpegSize == 0 || jpegSize > static_cast<DWORD>(jpegBuffer.size())) {
         qWarning() << "[ThumbnailFetch] SDK JPEG capture failed for" << cacheKey

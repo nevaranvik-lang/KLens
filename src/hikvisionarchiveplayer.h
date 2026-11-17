@@ -15,6 +15,7 @@
 #include <QAudioOutput>
 #include <QAudioFormat>
 
+class QTimer;
 class YV12ToRGBTask;
 
 class HikvisionArchivePlayer : public QQuickPaintedItem
@@ -108,6 +109,7 @@ private:
 
     void cleanupPlayback();
     bool ensureLogin(const QString &ip, int port, const QString &user, const QString &pass);
+    void scheduleLiveRetry(quint64 epoch, int streamType, bool countedDeviceAttempt, qint64 cooldownRemainingMs);
 
     QString m_recorderIp;
     int m_channelId = 1;
@@ -171,6 +173,16 @@ private:
 
     QThread* m_workerThread = nullptr;
     QObject* m_worker = nullptr;
+
+    // Live-preview auto-recovery (GUI thread only). When a live start fails
+    // (login error / dead session), a single-shot timer re-runs startLive.
+    // Retries that hit the manager's login cooldown fast-fail without device
+    // I/O, so the loop is cheap and automatically resumes once the device
+    // recovers (e.g. after its Illegal Login Lock expires).
+    QTimer* m_liveRetryTimer = nullptr;
+    quint64 m_liveRetryEpoch = 0; // 0 = no pending retry
+    int m_liveRetryStreamType = 0;
+    int m_liveRetryAttempts = 0;
 
     Q_INVOKABLE void initAudioOutput(int sampleRate, int channels, uint64_t sessionId);
     static void AudioCallBack(long nPort, char * pAudioBuf, long nSize, long nStamp, long nType, long nUser);

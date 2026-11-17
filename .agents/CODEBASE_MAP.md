@@ -53,11 +53,14 @@ This document contains a complete technical index of all C++ classes, QML compon
 ### [`HikvisionManager`](file:///home/robert/cctv/kvision/src/hikvisionmanager.h) (`CCTV_Viewer.Hikvision`)
 * **Thread affinity**: Main GUI Thread + Background `ptzWorkerLoop` thread.
 * **Responsibilities**: Session pooling (`NET_DVR_Login_V40`), PTZ zoom command queue, async device discovery, and channel I-Frame force injection.
+* **Login serialization & throttling**: All `NET_DVR_Login_V40` attempts for one device run serialized behind a per-device mutex (`loginMutexFor()`), and failed logins start a per-device cooldown (`recordLoginFailure()`: 15 s–2 min backoff for transient errors, 5 min for wrong credentials, 30 min for SDK error 153 `NET_DVR_USER_LOCKED` — the device's "Illegal Login Lock"). While a cooldown is active, `loginToDevice()` fast-fails without device I/O. This prevents the burst of simultaneous same-account logins (live players + thumbnails + status poller + ISAPI fallback) that trips the device lock and breaks every camera channel with "SDK login failed (153)".
 * **Invokables & Methods**:
   * `QVariantList discoverCameras(QString ip, int port, int httpPort, QString user, QString pass)` (synchronous).
   * `void discoverCamerasAsync(QString ip, int port, int httpPort, QString user, QString pass)` – Executes discovery on a separate `QThread`, emitting `discoveryFinished()`.
-  * `LONG loginShared(QString ip, int port, QString user, QString pass, NET_DVR_DEVICEINFO_V40 *info)` – Reuses existing `lUserID` for given host/credentials.
+  * `LONG loginShared(QString ip, int port, QString user, QString pass, NET_DVR_DEVICEINFO_V40 *info)` – Reuses existing `lUserID` for given host/credentials; serialized per device (double-checked) so concurrent callers share one login.
   * `void logoutShared(QString ip)` – Decrements ref-count and calls `NET_DVR_Logout` when 0.
+  * `void releaseShared(QString ip, LONG userID)` – Like `logoutShared()`, but only decrements if `userID` is still the active shared session (safe when the session was replaced/force-logged-out).
+  * `int lastLoginError(QString ip)` / `qint64 loginCooldownRemainingMs(QString ip)` – Inspect the recorded login failure reason and remaining throttle window.
   * `void ptzZoom(QString ip, int port, QString user, QString pass, int channelId, int command, bool stop)` – Enqueues PTZ commands to `ptzWorkerLoop` thread to prevent GUI frame drops.
   * `void forceIFrame(QString ip, int port, QString user, QString pass, int channelId)` – Invokes `NET_DVR_MakeKeyFrameSub` for fast stream start.
 * **Signals**: `sessionStatusChanged(QString ip, bool loggedIn)`, `discoveryFinished(QString ip, QVariantList cameras, bool success, QString errorMsg)`.
@@ -66,7 +69,8 @@ This document contains a complete technical index of all C++ classes, QML compon
 
 ### [`HikvisionArchivePlayer`](file:///home/robert/cctv/kvision/src/hikvisionarchiveplayer.h) (`CCTV_Viewer.Hikvision`)
 * **Inherits**: `QQuickPaintedItem`.
-* **Responsibilities**: High-performance archive video/audio playback from Hikvision NVRs via `NET_DVR_PlayBackByTime_V40`.
+* **Responsibilities**: High-performance archive video/audio playback from Hikvision NVRs via `NET_DVR_PlayBackByTime_V40`; also used as the live SDK preview player when the "Use SDK instead of RTSP" (`useSdkMedia`) recorder option is enabled.
+* **Live preview auto-recovery**: `startLive()` failures (SDK login error or dead session) schedule an epoch-guarded single-shot retry (`scheduleLiveRetry()`); retries that fall inside the manager's login cooldown fast-fail without device I/O, so the preview resumes automatically once the device allows logins again. After ~5 real device attempts the loop gives up and leaves the status message visible. Login failures surface a human-readable reason (`hikSdkLoginErrorText()`), e.g. error 153 = account locked by the device's "Illegal Login Lock".
 * **Q_PROPERTY**:
   * `recorderIp` (`QString`), `channelId` (`int`), `port` (`int`), `username` (`QString`), `password` (`QString`).
   * `currentPlayheadMs` (`qint64`) – Current playback position in Unix milliseconds.

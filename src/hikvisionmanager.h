@@ -9,6 +9,7 @@
 #include <QPair>
 #include <QList>
 #include <QThread>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <condition_variable>
@@ -61,6 +62,19 @@ public:
     void logoutShared(const QString &ip);
     void forceLogoutShared(const QString &ip);
 
+    // Releases the reference acquired via loginShared(), but only if userID is
+    // still the active shared session for this device. Safer than logoutShared()
+    // when the session may have been replaced/force-logged-out in the meantime.
+    void releaseShared(const QString &ip, LONG userID);
+
+    // Last recorded SDK error for login attempts on this device (0 when unknown).
+    // Useful after a throttled (fast-fail) login attempt, where NET_DVR_GetLastError()
+    // would return a stale value.
+    Q_INVOKABLE int lastLoginError(const QString &ip) const;
+
+    // Milliseconds until the next login attempt for this device is allowed (0 = now).
+    Q_INVOKABLE qint64 loginCooldownRemainingMs(const QString &ip) const;
+
     LONG getSession(const QString &ip, int port, const QString &username, const QString &password);
     bool getDeviceInfo(const QString &ip, NET_DVR_DEVICEINFO_V40 &deviceInfo);
 
@@ -77,12 +91,40 @@ private:
         NET_DVR_DEVICEINFO_V40 deviceInfo;
     };
 
+    // Tracks why and when the last login attempt failed for a device, so
+    // repeated attempts can be throttled instead of hammering the device.
+    // Hammering is what trips Hikvision's "Illegal Login Lock" (SDK error 153,
+    // NET_DVR_USER_LOCKED: 5 consecutive failed logins lock the account for
+    // ~30 minutes), which then breaks every camera channel.
+    struct LoginFailureState {
+        qint64 lastAttemptMs = 0;
+        qint64 retryNotBeforeMs = 0;
+        int consecutiveFailures = 0;
+        DWORD lastError = 0;
+    };
+
     bool isLoggedInternal(const QString &ip) const;
+
+    // Performs exactly one serialized NET_DVR_Login_V40 attempt for a device.
+    // The caller must already hold the device's login mutex (loginMutexFor()).
+    // When bypassCooldown is false and the device is in a failure cooldown,
+    // returns -1 immediately without touching the network.
+    LONG loginToDevice(const QString &ip, int port, const QString &username, const QString &password,
+                       NET_DVR_DEVICEINFO_V40 &deviceInfo, bool bypassCooldown = false);
+    void recordLoginFailure(const QString &cleanIp, DWORD err);
+    void clearLoginFailure(const QString &cleanIp);
+    std::shared_ptr<std::mutex> loginMutexFor(const QString &cleanIp);
 
     static HikvisionManager* m_instance;
     QHash<QString, SessionInfo> m_sessions; // Maps clean IP to SessionInfo
     QHash<QString, SharedSession> m_sharedSessions;
     std::mutex m_sharedSessionsMutex;
+
+    QHash<QString, LoginFailureState> m_loginFailures;
+    mutable std::mutex m_loginStateMutex;
+    QHash<QString, std::shared_ptr<std::mutex>> m_loginMutexes;
+    std::mutex m_loginMutexesMutex;
+
     bool m_initialized;
 
     struct PtzCommand {

@@ -9,8 +9,10 @@
 #include <QCoreApplication>
 #include <QThreadPool>
 #include <QRunnable>
+#include <QTimer>
 #include <iostream>
 #include <set>
+#include <algorithm>
 #include <cstring>
 #include <QAudioDeviceInfo>
 
@@ -18,6 +20,23 @@
 #define T_YV12 3
 #define T_AUDIO16 101
 #define T_AUDIO8 100
+
+// Maps the most common SDK login errors to a short, user-facing reason.
+// The numeric code is appended by the caller.
+static QString hikSdkLoginErrorText(DWORD err)
+{
+    switch (err) {
+    case 1:
+        return QStringLiteral("wrong username or password");
+    case 47: // NET_DVR_USERNOTEXIST
+    case 152: // NET_DVR_USERNAME_NOT_EXIST
+        return QStringLiteral("user does not exist on the device");
+    case 153: // NET_DVR_USER_LOCKED — device "Illegal Login Lock"
+        return QStringLiteral("account locked on the device after repeated failed logins — wait ~30 minutes, unlock it in the recorder's web interface, or reboot the recorder");
+    default:
+        return QStringLiteral("SDK error %1").arg(err);
+    }
+}
 
 static QByteArray resampleAudio(const char* inputBuf, int inputSize, int inputRate, int outputRate, int outputChannels)
 {
@@ -215,6 +234,24 @@ HikvisionArchivePlayer::HikvisionArchivePlayer(QQuickItem *parent)
     m_worker->moveToThread(m_workerThread);
     m_workerThread->start();
 
+    // Live-preview auto-recovery: re-run startLive after a failed attempt.
+    // The epoch check makes a pending retry harmless if the user stopped the
+    // stream, switched channels or switched to playback in the meantime.
+    m_liveRetryTimer = new QTimer(this);
+    m_liveRetryTimer->setSingleShot(true);
+    connect(m_liveRetryTimer, &QTimer::timeout, this, [this]() {
+        if (m_liveRetryEpoch == 0) {
+            return;
+        }
+        if (m_playbackSessionId.load() != m_liveRetryEpoch) {
+            m_liveRetryEpoch = 0;
+            return;
+        }
+        m_liveRetryEpoch = 0;
+        qDebug() << "[HikLive] Auto-retrying live preview (attempt" << m_liveRetryAttempts << ")";
+        startLive(m_liveRetryStreamType);
+    });
+
     // The Hikvision SDK (HCNetSDK) requires NET_DVR_Init(). 
     // HikvisionManager already calls it.
     qDebug() << "[HikArchive] Component created";
@@ -224,6 +261,13 @@ HikvisionArchivePlayer::~HikvisionArchivePlayer()
 {
     qDebug() << "[HikArchive] ~HikvisionArchivePlayer() DESTRUCTOR CALLED!";
     
+    if (m_liveRetryTimer) {
+        m_liveRetryTimer->stop();
+        m_liveRetryTimer->deleteLater();
+        m_liveRetryTimer = nullptr;
+    }
+    m_liveRetryEpoch = 0;
+
     if (m_workerThread) {
         m_workerThread->quit();
         m_workerThread->wait();
@@ -247,12 +291,12 @@ HikvisionArchivePlayer::~HikvisionArchivePlayer()
     }
 
     if (m_lUserID >= 0) {
+        const LONG uid = m_lUserID.exchange(-1);
         if (HikvisionManager::instance()) {
-            HikvisionManager::instance()->logoutShared(m_recorderIp);
+            HikvisionManager::instance()->releaseShared(m_recorderIp, uid);
         } else {
-            NET_DVR_Logout(m_lUserID);
+            NET_DVR_Logout(uid);
         }
-        m_lUserID = -1;
     }
 
     if (m_worker) {
@@ -385,6 +429,7 @@ void HikvisionArchivePlayer::cleanupPlayback()
 QString HikvisionArchivePlayer::recorderIp() const { return m_recorderIp; }
 void HikvisionArchivePlayer::setRecorderIp(const QString &ip) {
     if (m_recorderIp != ip) {
+        m_liveRetryAttempts = 0;
         QString oldIp = m_recorderIp;
         LONG oldUserId = m_lUserID.exchange(-1);
         m_recorderIp = ip;
@@ -394,7 +439,7 @@ void HikvisionArchivePlayer::setRecorderIp(const QString &ip) {
             cleanupPlayback();
             if (oldUserId >= 0) {
                 if (HikvisionManager::instance()) {
-                    HikvisionManager::instance()->logoutShared(oldIp);
+                    HikvisionManager::instance()->releaseShared(oldIp, oldUserId);
                 } else {
                     NET_DVR_Logout(oldUserId);
                 }
@@ -406,6 +451,7 @@ void HikvisionArchivePlayer::setRecorderIp(const QString &ip) {
 int HikvisionArchivePlayer::channelId() const { return m_channelId; }
 void HikvisionArchivePlayer::setChannelId(int id) {
     if (m_channelId != id) {
+        m_liveRetryAttempts = 0;
         QString oldIp = m_recorderIp;
         LONG oldUserId = m_lUserID.exchange(-1);
         m_channelId = id;
@@ -415,7 +461,7 @@ void HikvisionArchivePlayer::setChannelId(int id) {
             cleanupPlayback();
             if (oldUserId >= 0) {
                 if (HikvisionManager::instance()) {
-                    HikvisionManager::instance()->logoutShared(oldIp);
+                    HikvisionManager::instance()->releaseShared(oldIp, oldUserId);
                 } else {
                     NET_DVR_Logout(oldUserId);
                 }
@@ -427,6 +473,7 @@ void HikvisionArchivePlayer::setChannelId(int id) {
 int HikvisionArchivePlayer::port() const { return m_port; }
 void HikvisionArchivePlayer::setPort(int p) {
     if (m_port != p) {
+        m_liveRetryAttempts = 0;
         QString oldIp = m_recorderIp;
         LONG oldUserId = m_lUserID.exchange(-1);
         m_port = p;
@@ -436,7 +483,7 @@ void HikvisionArchivePlayer::setPort(int p) {
             cleanupPlayback();
             if (oldUserId >= 0) {
                 if (HikvisionManager::instance()) {
-                    HikvisionManager::instance()->logoutShared(oldIp);
+                    HikvisionManager::instance()->releaseShared(oldIp, oldUserId);
                 } else {
                     NET_DVR_Logout(oldUserId);
                 }
@@ -448,6 +495,7 @@ void HikvisionArchivePlayer::setPort(int p) {
 QString HikvisionArchivePlayer::username() const { return m_username; }
 void HikvisionArchivePlayer::setUsername(const QString &un) {
     if (m_username != un) {
+        m_liveRetryAttempts = 0;
         QString oldIp = m_recorderIp;
         LONG oldUserId = m_lUserID.exchange(-1);
         m_username = un;
@@ -457,7 +505,7 @@ void HikvisionArchivePlayer::setUsername(const QString &un) {
             cleanupPlayback();
             if (oldUserId >= 0) {
                 if (HikvisionManager::instance()) {
-                    HikvisionManager::instance()->logoutShared(oldIp);
+                    HikvisionManager::instance()->releaseShared(oldIp, oldUserId);
                 } else {
                     NET_DVR_Logout(oldUserId);
                 }
@@ -469,6 +517,7 @@ void HikvisionArchivePlayer::setUsername(const QString &un) {
 QString HikvisionArchivePlayer::password() const { return m_password; }
 void HikvisionArchivePlayer::setPassword(const QString &pw) {
     if (m_password != pw) {
+        m_liveRetryAttempts = 0;
         QString oldIp = m_recorderIp;
         LONG oldUserId = m_lUserID.exchange(-1);
         m_password = pw;
@@ -478,7 +527,7 @@ void HikvisionArchivePlayer::setPassword(const QString &pw) {
             cleanupPlayback();
             if (oldUserId >= 0) {
                 if (HikvisionManager::instance()) {
-                    HikvisionManager::instance()->logoutShared(oldIp);
+                    HikvisionManager::instance()->releaseShared(oldIp, oldUserId);
                 } else {
                     NET_DVR_Logout(oldUserId);
                 }
@@ -691,6 +740,30 @@ void HikvisionArchivePlayer::playAtTime(const QDateTime &dateTime)
     }, Qt::QueuedConnection);
 }
 
+void HikvisionArchivePlayer::scheduleLiveRetry(quint64 epoch, int streamType, bool countedDeviceAttempt, qint64 cooldownRemainingMs)
+{
+    // Runs on the GUI thread (invoked via QMetaObject::invokeMethod).
+    if (countedDeviceAttempt) {
+        m_liveRetryAttempts++;
+    }
+    if (m_liveRetryAttempts > 5) {
+        // Enough real device attempts — leave the last status message visible
+        // and stop looping. Switching channels/layouts starts fresh again.
+        m_liveRetryEpoch = 0;
+        return;
+    }
+
+    m_liveRetryEpoch = epoch;
+    m_liveRetryStreamType = streamType;
+
+    // Stay in sync with the manager's login cooldown: while it lasts, login
+    // attempts fast-fail locally anyway, so there is no point retrying sooner.
+    const int delayMs = static_cast<int>(std::max<qint64>(30000, cooldownRemainingMs + 5000));
+    if (m_liveRetryTimer) {
+        m_liveRetryTimer->start(delayMs);
+    }
+}
+
 void HikvisionArchivePlayer::startLive(int streamType)
 {
     const QString ip = m_recorderIp;
@@ -714,8 +787,31 @@ void HikvisionArchivePlayer::startLive(int streamType)
         };
 
         setStatus(QStringLiteral("Connecting to SDK preview..."));
+        HikvisionManager *mgr = HikvisionManager::instance();
+        // Whether THIS attempt will actually reach the device: while the
+        // manager's login cooldown is active, loginShared() fast-fails locally.
+        const bool loginReachedDevice = mgr ? (mgr->loginCooldownRemainingMs(ip) <= 0) : true;
         if (!ensureLogin(ip, port, user, pass)) {
-            setStatus(QStringLiteral("SDK login failed (%1)").arg(NET_DVR_GetLastError()));
+            DWORD err = NET_DVR_GetLastError();
+            if (mgr) {
+                // After a throttled (fast-fail) login attempt NET_DVR_GetLastError()
+                // is stale — prefer the recorded failure reason.
+                const int recordedErr = mgr->lastLoginError(ip);
+                if (recordedErr > 0) {
+                    err = static_cast<DWORD>(recordedErr);
+                }
+            }
+            setStatus(QStringLiteral("SDK login failed: %1 (%2)").arg(hikSdkLoginErrorText(err)).arg(err));
+
+            // Auto-recovery: retry later. Retries issued while the manager's
+            // login cooldown is active fast-fail without touching the device,
+            // and the loop resumes the preview automatically once the device
+            // allows logins again (e.g. its account lock expired).
+            const quint64 epoch = m_playbackSessionId.load();
+            const qint64 cooldownRemainingMs = mgr ? mgr->loginCooldownRemainingMs(ip) : 0;
+            QMetaObject::invokeMethod(this, [this, epoch, requestedStreamType, loginReachedDevice, cooldownRemainingMs]() {
+                scheduleLiveRetry(epoch, requestedStreamType, /*countedDeviceAttempt=*/loginReachedDevice, cooldownRemainingMs);
+            }, Qt::QueuedConnection);
             return;
         }
 
@@ -754,6 +850,24 @@ void HikvisionArchivePlayer::startLive(int streamType)
             qWarning() << "[HikLive] NET_DVR_RealPlay_V40 FAILED. Error:" << error
                        << "Channel:" << m_realSdkChannel;
             cleanupPlayback();
+            // The shared session may have been invalidated (e.g. another
+            // player's recovery force-logged it out, or the device dropped
+            // it). Drop our reference so the next start attempt performs a
+            // fresh login instead of reusing a dead userID forever.
+            const LONG staleUserId = m_lUserID.exchange(-1);
+            if (staleUserId >= 0) {
+                if (HikvisionManager *mgr = HikvisionManager::instance()) {
+                    mgr->releaseShared(ip, staleUserId);
+                } else {
+                    NET_DVR_Logout(staleUserId);
+                }
+            }
+
+            // Auto-recovery: retry with a fresh session shortly.
+            const quint64 epoch = m_playbackSessionId.load();
+            QMetaObject::invokeMethod(this, [this, epoch, requestedStreamType]() {
+                scheduleLiveRetry(epoch, requestedStreamType, /*countedDeviceAttempt=*/true, 0);
+            }, Qt::QueuedConnection);
             return;
         }
 
@@ -779,6 +893,12 @@ void HikvisionArchivePlayer::startLive(int streamType)
         }
         setStatus(QStringLiteral("Waiting for SDK video..."));
         QMetaObject::invokeMethod(this, [this]() {
+            // Live preview is up — reset auto-recovery state.
+            m_liveRetryAttempts = 0;
+            m_liveRetryEpoch = 0;
+            if (m_liveRetryTimer) {
+                m_liveRetryTimer->stop();
+            }
             emit playingChanged();
         }, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
@@ -905,6 +1025,7 @@ void HikvisionArchivePlayer::stop()
 {
     qDebug() << "[HikArchive] stop() called from QML!";
     m_currentSpeedMultiplier = 1;
+    m_liveRetryAttempts = 0;
     QMetaObject::invokeMethod(m_worker, [this]() {
         cleanupPlayback();
     }, Qt::QueuedConnection);
