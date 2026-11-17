@@ -17,7 +17,7 @@
 
 ## About KLens
 
-KLens is the rebranded continuation of [Arkanista/KVision](https://github.com/Arkanista/KVision), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
+KLens is the rebranded continuation of [KVision (now KLens)](https://github.com/nevaranvik-lang/KLens), with an optional Hikvision SDK media-viewing mode. Enable **Use SDK instead of RTSP** for a recorder to receive live video through HCNetSDK; RTSP remains the default.
 
 **KLens** is a high-performance VMS (Video Management System) class desktop application designed for simultaneous viewing of live video feeds (RTSP/ONVIF) and deep integration with Hikvision NVR/DVR video recorders (both Live view and synchronized Playback archives).
 
@@ -132,7 +132,7 @@ To install dependencies and build/install directly, use `./tools/install_ubuntu.
 
 To clone this repository, make sure you include the submodules:
 ```bash
-git clone --recurse-submodules https://github.com/nevaranvik-lang/kvision.git klens
+git clone --recurse-submodules https://github.com/nevaranvik-lang/KLens.git klens
 ```
 
 ### Debian / Ubuntu install and package build
@@ -142,7 +142,7 @@ KLens supports Debian 12/13 and Ubuntu 22.04+ x86_64. Installation and packaging
 #### Build and install KLens from source
 
 ```bash
-git clone --recurse-submodules https://github.com/nevaranvik-lang/KVision.git klens
+git clone --recurse-submodules https://github.com/nevaranvik-lang/KLens.git klens
 cd klens
 ./tools/install_ubuntu.sh
 ```

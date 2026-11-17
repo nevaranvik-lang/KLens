@@ -16,7 +16,7 @@ set(ORG_DOMAIN "kvision.org")
 
 set(VERSION "${VER_MAJ}.${VER_MIN}.${VER_PAT}")
 
-project(klens VERSION ${VERSION} HOMEPAGE_URL "https://github.com/arkanista/kvision" LANGUAGES C CXX)
+project(klens VERSION ${VERSION} HOMEPAGE_URL "https://github.com/nevaranvik-lang/KLens" LANGUAGES C CXX)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT EXISTS "/etc/os-release")
     message(FATAL_ERROR "KLens supports Debian and Ubuntu Linux only.")

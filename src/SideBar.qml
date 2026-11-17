@@ -1100,7 +1100,7 @@ FocusScope {
 
                 // Footer version link
                 Text {
-                    text: "<a href=\"https://github.com/nevaranvik-lang/KVision\" style=\"color: #8898a6; text-decoration: none;\">GitHub Project</a>"
+                    text: "<a href=\"https://github.com/nevaranvik-lang/KLens\" style=\"color: #8898a6; text-decoration: none;\">GitHub Project</a>"
                     font.pixelSize: 11
                     textFormat: Text.RichText
                     horizontalAlignment: Text.AlignHCenter

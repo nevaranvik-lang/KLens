@@ -103,7 +103,7 @@ sudo apt install ./dist/klens_1.0.0-1_<distro>_amd64.deb
 #### Компилиране и инсталиране от изходния код
 
 ```bash
-git clone --recurse-submodules https://github.com/Arkanista/KVision.git klens
+git clone --recurse-submodules https://github.com/nevaranvik-lang/KLens.git klens
 cd klens
 ./tools/install_ubuntu.sh
 ```
