@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-11-17
+
+### Improvements
+* Added drag-and-drop reordering for NVR views in the settings tab.
+
 ## [1.0.1] - 2026-11-17
 
 ### Improvements

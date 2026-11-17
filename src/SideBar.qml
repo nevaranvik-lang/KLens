@@ -1999,107 +1999,182 @@ FocusScope {
 
                             Repeater {
                                 model: rootSideBar.nvrIndices
-                                delegate: RowLayout {
+                                delegate: Item {
                                     id: nvrRow
-                                    spacing: 12
                                     Layout.fillWidth: true
+                                    implicitHeight: nvrRowLayout.implicitHeight
 
                                     property var layout: layoutsCollectionModel.get(modelData)
 
-                                    Rectangle {
-                                        width: 4
-                                        height: 24
-                                        radius: 2
-                                        color: stackLayout.currentIndex === modelData ? "#00f5d4" : "transparent"
+                                    Drag.active: nvrDragArea.drag.active
+                                    Drag.dragType: Drag.Internal
+                                    Drag.keys: ["klens-nvr-view"]
+                                    Drag.supportedActions: Qt.MoveAction
+                                    Drag.hotSpot.x: nvrDragHandle.x + nvrDragArea.mouseX
+                                    Drag.hotSpot.y: nvrDragHandle.y + nvrDragArea.mouseY
+                                    Drag.mimeData: {
+                                        "application/x-klens-preset-index": String(index)
                                     }
 
-                                    TextField {
-                                        id: nvrNameField
-                                        text: (nvrRow.layout && nvrRow.layout.name) ? nvrRow.layout.name : ""
-                                        placeholderText: (nvrRow.layout && nvrRow.layout.nvrIp) ? getRecorderName(nvrRow.layout.nvrIp) : qsTr("LNG_00283")
-                                        selectByMouse: true
-                                        Layout.fillWidth: true
-                                        color: "white"
-                                        background: Rectangle {
-                                            color: "#0f151b"
-                                            radius: 4
-                                            border.color: nvrNameField.activeFocus ? "#ff7a00" : "#2a3540"
-                                        }
-                                        onEditingFinished: {
-                                            if (nvrRow.layout) {
-                                                nvrRow.layout.name = text;
+                                    RowLayout {
+                                        id: nvrRowLayout
+                                        anchors.fill: parent
+                                        spacing: 12
+
+                                        Item {
+                                            id: nvrDragHandle
+                                            implicitWidth: 18
+                                            implicitHeight: 28
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "⋮"
+                                                color: nvrDragArea.containsMouse ? "#00f5d4" : "#8898a6"
+                                                font.pixelSize: 20
                                             }
+
+                                            Item {
+                                                id: nvrDragDummy
+                                                width: 1
+                                                height: 1
+                                                visible: false
+                                            }
+
+                                            MouseArea {
+                                                id: nvrDragArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: drag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                                                drag.target: nvrDragDummy
+                                                drag.threshold: 8
+                                                onReleased: {
+                                                    nvrDragDummy.x = 0;
+                                                    nvrDragDummy.y = 0;
+                                                }
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            width: 4
+                                            height: 24
+                                            radius: 2
+                                            color: stackLayout.currentIndex === modelData ? "#00f5d4" : "transparent"
+                                        }
+
+                                        TextField {
+                                            id: nvrNameField
+                                            text: (nvrRow.layout && nvrRow.layout.name) ? nvrRow.layout.name : ""
+                                            placeholderText: (nvrRow.layout && nvrRow.layout.nvrIp) ? getRecorderName(nvrRow.layout.nvrIp) : qsTr("LNG_00283")
+                                            selectByMouse: true
+                                            Layout.fillWidth: true
+                                            color: "white"
+                                            background: Rectangle {
+                                                color: "#0f151b"
+                                                radius: 4
+                                                border.color: nvrNameField.activeFocus ? "#ff7a00" : "#2a3540"
+                                            }
+                                            onEditingFinished: {
+                                                if (nvrRow.layout) {
+                                                    nvrRow.layout.name = text;
+                                                }
+                                            }
+                                        }
+
+                                        CheckBox {
+                                            text: qsTr("LNG_00278")
+                                            checked: nvrRow.layout ? nvrRow.layout.visible : true
+                                            onCheckedChanged: {
+                                                if (nvrRow.layout) {
+                                                    nvrRow.layout.visible = checked;
+                                                }
+                                            }
+                                            palette.highlight: "#00f5d4"
+                                        }
+
+                                        Button {
+                                            id: activateBtnNvr
+                                            implicitWidth: 28
+                                            implicitHeight: 28
+                                            highlighted: stackLayout.currentIndex === modelData
+                                            onClicked: {
+                                                stackLayout.currentIndex = modelData;
+                                            }
+                                            contentItem: Image {
+                                                anchors.centerIn: parent
+                                                width: 14
+                                                height: 14
+                                                source: {
+                                                    var colorStr = activateBtnNvr.pressed ? "%23ffffff" : (activateBtnNvr.highlighted ? "%23ffffff" : (activateBtnNvr.hovered ? "%23ffffff" : "%238898a6"));
+                                                    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" + colorStr + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='6 3 20 12 6 21 6 3'></polygon></svg>";
+                                                }
+                                            }
+                                            background: Rectangle {
+                                                color: activateBtnNvr.pressed ? "#cc121214" : (activateBtnNvr.highlighted ? "#ff7a00" : (activateBtnNvr.hovered ? "#3a4550" : "#1c242c"))
+                                                radius: 14
+                                                border.color: activateBtnNvr.highlighted ? "#ff9e00" : (activateBtnNvr.hovered ? "#8898a6" : "#2a3540")
+                                                border.width: 1
+                                            }
+                                            ToolTip.delay: Compact.toolTipDelay
+                                            ToolTip.timeout: Compact.toolTipTimeout
+                                            ToolTip.visible: activateBtnNvr.hovered
+                                            ToolTip.text: qsTr("LNG_00282")
+                                        }
+
+                                        Button {
+                                            id: delNvrBtn
+                                            implicitWidth: 28
+                                            implicitHeight: 28
+                                            contentItem: Image {
+                                                anchors.centerIn: parent
+                                                width: 14
+                                                height: 14
+                                                source: {
+                                                    var colorStr = delNvrBtn.hovered ? "%23ff4d4d" : "%238898a6";
+                                                    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" + colorStr + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path><line x1='10' y1='11' x2='10' y2='17'></line><line x1='14' y1='11' x2='14' y2='17'></line></svg>";
+                                                }
+                                            }
+                                            background: Rectangle {
+                                                color: delNvrBtn.pressed ? "#40ff0000" : (delNvrBtn.hovered ? "#20ff0000" : "transparent")
+                                                radius: 14
+                                                border.color: delNvrBtn.hovered ? "#ff4d4d" : "#2a3540"
+                                                border.width: 1
+                                            }
+
+                                            onClicked: {
+                                                nvrPresetDeleteDialog.index = modelData;
+                                                nvrPresetDeleteDialog.open();
+                                            }
+                                            ToolTip.delay: Compact.toolTipDelay
+                                            ToolTip.timeout: Compact.toolTipTimeout
+                                            ToolTip.visible: delNvrBtn.hovered
+                                            ToolTip.text: qsTr("LNG_00281")
                                         }
                                     }
 
-                                    CheckBox {
-                                        text: qsTr("LNG_00278")
-                                        checked: nvrRow.layout ? nvrRow.layout.visible : true
-                                        onCheckedChanged: {
-                                            if (nvrRow.layout) {
-                                                nvrRow.layout.visible = checked;
-                                            }
-                                        }
-                                        palette.highlight: "#00f5d4"
-                                    }
+                                    DropArea {
+                                        id: nvrDropArea
+                                        anchors.fill: parent
+                                        keys: ["klens-nvr-view"]
+                                        property bool dropPreviewVisible: false
+                                        property bool dropAfter: false
 
-                                    Button {
-                                        id: activateBtnNvr
-                                        implicitWidth: 28
-                                        implicitHeight: 28
-                                        highlighted: stackLayout.currentIndex === modelData
-                                        onClicked: {
-                                            stackLayout.currentIndex = modelData;
-                                        }
-                                        contentItem: Image {
-                                            anchors.centerIn: parent
-                                            width: 14
-                                            height: 14
-                                            source: {
-                                                var colorStr = activateBtnNvr.pressed ? "%23ffffff" : (activateBtnNvr.highlighted ? "%23ffffff" : (activateBtnNvr.hovered ? "%23ffffff" : "%238898a6"));
-                                                return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" + colorStr + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='6 3 20 12 6 21 6 3'></polygon></svg>";
-                                            }
-                                        }
-                                        background: Rectangle {
-                                            color: activateBtnNvr.pressed ? "#cc121214" : (activateBtnNvr.highlighted ? "#ff7a00" : (activateBtnNvr.hovered ? "#3a4550" : "#1c242c"))
-                                            radius: 14
-                                            border.color: activateBtnNvr.highlighted ? "#ff9e00" : (activateBtnNvr.hovered ? "#8898a6" : "#2a3540")
-                                            border.width: 1
-                                        }
-                                        ToolTip.delay: Compact.toolTipDelay
-                                        ToolTip.timeout: Compact.toolTipTimeout
-                                        ToolTip.visible: activateBtnNvr.hovered
-                                        ToolTip.text: qsTr("LNG_00282")
-                                    }
-
-                                    Button {
-                                        id: delNvrBtn
-                                        implicitWidth: 28
-                                        implicitHeight: 28
-                                        contentItem: Image {
-                                            anchors.centerIn: parent
-                                            width: 14
-                                            height: 14
-                                            source: {
-                                                var colorStr = delNvrBtn.hovered ? "%23ff4d4d" : "%238898a6";
-                                                return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" + colorStr + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path><line x1='10' y1='11' x2='10' y2='17'></line><line x1='14' y1='11' x2='14' y2='17'></line></svg>";
-                                            }
-                                        }
-                                        background: Rectangle {
-                                            color: delNvrBtn.pressed ? "#40ff0000" : (delNvrBtn.hovered ? "#20ff0000" : "transparent")
-                                            radius: 14
-                                            border.color: delNvrBtn.hovered ? "#ff4d4d" : "#2a3540"
-                                            border.width: 1
+                                        onEntered: rootSideBar.updatePresetDropHint(nvrDropArea, drag)
+                                        onPositionChanged: rootSideBar.updatePresetDropHint(nvrDropArea, drag)
+                                        onExited: dropPreviewVisible = false
+                                        onDropped: {
+                                            rootSideBar.dropPresetOnRow(drop, rootSideBar.nvrIndices, index, dropAfter);
+                                            dropPreviewVisible = false;
                                         }
 
-                                        onClicked: {
-                                            nvrPresetDeleteDialog.index = modelData;
-                                            nvrPresetDeleteDialog.open();
+                                        Rectangle {
+                                            x: 0
+                                            y: nvrDropArea.dropAfter ? nvrDropArea.height - height : 0
+                                            width: nvrDropArea.width
+                                            height: 3
+                                            color: "#00f5d4"
+                                            visible: nvrDropArea.dropPreviewVisible
+                                            z: 2
                                         }
-                                        ToolTip.delay: Compact.toolTipDelay
-                                        ToolTip.timeout: Compact.toolTipTimeout
-                                        ToolTip.visible: delNvrBtn.hovered
-                                        ToolTip.text: qsTr("LNG_00281")
                                     }
                                 }
                             }

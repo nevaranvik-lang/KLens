@@ -97,7 +97,7 @@ The supported targets are Debian 12/13 and Ubuntu 22.04+ (x86_64).
 
 Install a downloaded or locally built `.deb` package with apt:
 ```bash
-sudo apt install ./dist/klens_1.0.1-1_<distro>_amd64.deb
+sudo apt install ./dist/klens_1.0.2-1_<distro>_amd64.deb
 ```
 
 #### Build and install from source

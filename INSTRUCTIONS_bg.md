@@ -97,7 +97,7 @@
 
 Инсталирайте изтеглен или локално създаден `.deb` пакет с apt:
 ```bash
-sudo apt install ./dist/klens_1.0.1-1_<distro>_amd64.deb
+sudo apt install ./dist/klens_1.0.2-1_<distro>_amd64.deb
 ```
 
 #### Компилиране и инсталиране от изходния код

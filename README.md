@@ -158,7 +158,7 @@ The script installs Debian/Ubuntu dependencies, builds KLens, and installs it un
 The script builds a distro-specific package under `dist/`. Install it with apt:
 
 ```bash
-sudo apt install ./dist/klens_1.0.1-1_<distro>_amd64.deb
+sudo apt install ./dist/klens_1.0.2-1_<distro>_amd64.deb
 ```
 
 ### 🌐 Remote Recorders (WAN / NAT / Internet) & Port Forwarding Guide
